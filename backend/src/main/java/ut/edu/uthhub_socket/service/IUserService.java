@@ -1,0 +1,29 @@
+package ut.edu.uthhub_socket.service;
+
+import org.springframework.web.multipart.MultipartFile;
+import ut.edu.uthhub_socket.enums.Role;
+import ut.edu.uthhub_socket.model.User;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+public interface IUserService {
+    Optional<User> findById(Integer id);
+
+    Optional<User> findByUsername(String username);
+
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    User save(User user);
+
+    User update(User user);
+
+    void updatePassword(Integer userId, String encodedPassword);
+
+    void updateRole(Integer userId, Role role);
+
+    User register(User user);
+}
