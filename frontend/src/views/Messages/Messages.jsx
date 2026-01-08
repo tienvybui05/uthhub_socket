@@ -1,9 +1,12 @@
+import { ChatProvider } from "../../contexts/ChatContext";
 import ChatLayout from "../../layouts/ChatLayout/ChatLayout";
 
 function Messages() {
   return (
     <>
-      <ChatLayout />
+      <ChatProvider>
+        <ChatLayout />
+      </ChatProvider>
     </>
   );
 }

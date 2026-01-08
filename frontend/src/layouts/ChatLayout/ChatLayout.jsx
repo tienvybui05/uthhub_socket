@@ -5,14 +5,14 @@ import SideNavigation from "./SideNavigation/SideNavigation";
 function ChatLayout() {
   return (
     <div className={styles.wrapper}>
-      <div className={styles.chatMain}>
-        <ChatMain />
+      <div className={styles.sideNavigation}>
+        <SideNavigation />
       </div>
       <div className={styles.conversationSidebar}>
         <ConversationSidebar />
       </div>
-      <div className={styles.sideNavigation}>
-        <SideNavigation />
+      <div className={styles.chatMain}>
+        <ChatMain />
       </div>
     </div>
   );

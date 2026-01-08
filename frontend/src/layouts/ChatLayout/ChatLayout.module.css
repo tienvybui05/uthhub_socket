@@ -4,7 +4,7 @@
   background-color: var(--p-white);
   display: flex;
 }
-.chatMain {
+.sideNavigation {
   width: 64px;
   background-color: var(--p-700);
 }
@@ -12,7 +12,7 @@
   width: 350px;
   background-color: var(--p-white);
 }
-.sideNavigation {
+.chatMain {
   flex: 1;
   background-color: var(--p-white);
 }

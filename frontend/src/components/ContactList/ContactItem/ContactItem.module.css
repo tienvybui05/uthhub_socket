@@ -1,0 +1,24 @@
+.wrapper {
+  display: flex;
+  gap: 10px;
+  outline: none;
+  border: none;
+  padding: 18px 10px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  background-color: white;
+  font-size: var(--p-font-size);
+  color: rgb(73, 73, 73);
+}
+.wrapper:hover {
+  background-color: var(--p-hover);
+  border-radius: 3px;
+}
+.wrapper:focus-visible {
+  border-radius: 3px;
+  background-color: var(--p-50);
+}
+.active {
+  background-color: var(--p-50);
+  border-radius: 8px;
+}

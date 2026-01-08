@@ -1,0 +1,25 @@
+.wrapper {
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+.bottom,
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  gap: 10px;
+}
+.top {
+  padding-top: 32px;
+}
+.bottom {
+  padding-bottom: 32px;
+}
