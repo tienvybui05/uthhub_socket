@@ -1,0 +1,18 @@
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--p-white);
+  display: flex;
+}
+.chatMain {
+  width: 64px;
+  background-color: var(--p-700);
+}
+.conversationSidebar {
+  width: 350px;
+  background-color: var(--p-white);
+}
+.sideNavigation {
+  flex: 1;
+  background-color: var(--p-white);
+}
