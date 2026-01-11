@@ -1,0 +1,31 @@
+.wrapper {
+  all: unset;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wrapper svg {
+  font-size: 25px;
+  color: var(--p-white);
+}
+/* Hover chỉ là hover */
+.wrapper:hover {
+  background-color: rgba(102, 102, 102, 0.4);
+  border-radius: 8px;
+}
+
+/* Active do React control */
+.active {
+  background-color: rgba(102, 102, 102, 0.4);
+  border-radius: 8px;
+}
+
+/* Focus cho keyboard (accessibility) */
+.wrapper:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+}
