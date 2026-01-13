@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatDateTime } from "../../../utils/formatDateTime";
 import Avatar from "../../Avatar/Avatar";
 import styles from "./NotificationItem.module.css";
-function NotificationItem({ notifi }) {
+function NotificationItem({ notifi, onClick }) {
   return (
     <div className={styles.wrapper}>
       <div className={styles.avatar}>
@@ -26,9 +26,17 @@ function NotificationItem({ notifi }) {
           </div>
         )}
       </div>
-      <div className={styles.content}>
-        <p>{notifi.content}</p>
-        <p className={styles.time}>{formatDateTime(notifi.createdAt)}</p>
+      <div className={styles.content} onClick={onClick}>
+        <p className={`${notifi.isRead == true ? styles.isRead : ""} `}>
+          {notifi.content}
+        </p>
+        <p
+          className={`${styles.time}  ${
+            notifi.isRead == true ? styles.isRead : ""
+          }`}
+        >
+          {formatDateTime(notifi.createdAt)}
+        </p>
       </div>
       {!notifi.isRead && <div className={styles.notRead}></div>}
     </div>
