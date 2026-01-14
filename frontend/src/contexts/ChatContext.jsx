@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback } from "react";
 import { CHAT_TABS } from "../constants/contactsMenu";
 import WebSocketService from "../services/WebSocketService";
 import { AuthService } from "../services/auth.service";
+import conversationApi from "../api/conversationApi";
 
 const ChatContext = createContext(null);
 
@@ -24,43 +25,8 @@ export const ChatProvider = ({ children }) => {
   // Load conversations
   const loadConversations = useCallback(async () => {
     try {
-      // TODO: Replace with API call when backend is ready
-      // const response = await conversationApi.getConversations();
-      // setConversations(response.data);
-
-      // Mock data for testing UI
-      setConversations([
-        {
-          id: 1,
-          name: "Nguyễn Văn A",
-          avatarUrl: null,
-          lastMessage: "Xin chào, bạn khỏe không?",
-          lastMessageTime: new Date().toISOString(),
-          unreadCount: 2,
-          isGroup: false,
-          isOnline: true,
-        },
-        {
-          id: 2,
-          name: "Nhóm Dự án LTM",
-          avatarUrl: null,
-          lastMessage: "Deadline ngày mai nhé!",
-          lastMessageTime: new Date(Date.now() - 3600000).toISOString(),
-          unreadCount: 0,
-          isGroup: true,
-          participantCount: 5,
-        },
-        {
-          id: 3,
-          name: "Trần Thị B",
-          avatarUrl: null,
-          lastMessage: "Ok, hẹn gặp lại!",
-          lastMessageTime: new Date(Date.now() - 86400000).toISOString(),
-          unreadCount: 0,
-          isGroup: false,
-          isOnline: false,
-        },
-      ]);
+      const data = await conversationApi.getConversations();
+      setConversations(data);
     } catch (error) {
       console.error("Error loading conversations:", error);
     }
@@ -72,54 +38,14 @@ export const ChatProvider = ({ children }) => {
 
     setIsLoadingMessages(true);
     try {
-      // TODO: Replace with API call when backend is ready
-      // const response = await conversationApi.getMessages(conversationId);
-      // setMessages(response.data);
-
-      // Mock data for testing UI
-      setMessages([
-        {
-          id: 1,
-          content: "Xin chào!",
-          createdAt: new Date(Date.now() - 7200000).toISOString(),
-          isRead: true,
-          sender: { id: 999, fullName: "Nguyễn Văn A" },
-        },
-        {
-          id: 2,
-          content: "Chào bạn, mình là sinh viên UTH!",
-          createdAt: new Date(Date.now() - 7000000).toISOString(),
-          isRead: true,
-          sender: { id: currentUser?.id, fullName: currentUser?.fullName },
-        },
-        {
-          id: 3,
-          content: "Bạn học ngành gì vậy?",
-          createdAt: new Date(Date.now() - 6800000).toISOString(),
-          isRead: true,
-          sender: { id: 999, fullName: "Nguyễn Văn A" },
-        },
-        {
-          id: 4,
-          content: "Mình học Công nghệ thông tin, còn bạn?",
-          createdAt: new Date(Date.now() - 6600000).toISOString(),
-          isRead: true,
-          sender: { id: currentUser?.id, fullName: currentUser?.fullName },
-        },
-        {
-          id: 5,
-          content: "Xin chào, bạn khỏe không?",
-          createdAt: new Date().toISOString(),
-          isRead: false,
-          sender: { id: 999, fullName: "Nguyễn Văn A" },
-        },
-      ]);
+      const data = await conversationApi.getMessages(conversationId);
+      setMessages(data);
     } catch (error) {
       console.error("Error loading messages:", error);
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [currentUser]);
+  }, []);
 
   // Select a conversation
   const selectConversation = useCallback((conversation) => {
@@ -173,7 +99,7 @@ export const ChatProvider = ({ children }) => {
   const subscribeToMessages = useCallback(() => {
     if (!currentUser) return;
 
-    WebSocketService.subscribe(`/user/${currentUser.username}/queue/messages`, (message) => {
+    WebSocketService.subscribe(`/user/queue/messages`, (message) => {
       // Add received message
       setMessages((prev) => [...prev, message]);
 
