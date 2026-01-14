@@ -1,48 +1,58 @@
 import WebSocketService from "../../services/WebSocketService";
 import { useEffect } from "react";
 import { AuthService } from "../../services/auth.service";
-import { ChatProvider, useChat } from "../../contexts/ChatContext";
+import { ChatProvider } from "../../contexts/ChatContext";
 import ChatLayout from "../../layouts/ChatLayout/ChatLayout";
+import { useBackgroundChat } from "../../contexts/BackgroundChatContext";
+import { CHAT_BACKGROUND } from "../../constants/contactsMenu";
 
-function MessagesContent() {
-  const { loadConversations, subscribeToMessages } = useChat();
+import GlobalDefautl from "../../styles/GlobalDefautl/GlobalDefautl";
+import GlobalPink from "../../styles/GlobalPink/GlobalPink";
+import GlobalDark from "../../styles/GlobalDark/GlobalDark";
+
+function Messages() {
+  const { backgroundColor } = useBackgroundChat();
 
   useEffect(() => {
     WebSocketService.connect(
       () => {
-        console.log("Kết nối với web socket");
         const currentUser = AuthService.getUser();
         if (currentUser) {
           WebSocketService.send("/app/user/connect", {
             username: currentUser.username,
             status: "ONLINE",
           });
-
-          // Subscribe to messages after connection
-          subscribeToMessages();
         }
       },
       (error) => {
-        console.log("Lỗi khi kết nối vưới websocket", error);
+        console.log("Lỗi khi kết nối với websocket", error);
       }
     );
 
-    // Load conversations
-    loadConversations();
+    return () => WebSocketService.disconnect();
+  }, []);
 
-    return () => {
-      WebSocketService.disconnect();
-    };
-  }, [loadConversations, subscribeToMessages]);
+  let ThemeWrapper;
 
-  return <ChatLayout />;
-}
+  switch (backgroundColor) {
+    case CHAT_BACKGROUND.PINK:
+      ThemeWrapper = GlobalPink;
+      break;
+    case CHAT_BACKGROUND.DARK:
+      ThemeWrapper = GlobalDark;
+      break;
+    case CHAT_BACKGROUND.DEFAULT:
+    default:
+      ThemeWrapper = GlobalDefautl;
+  }
 
-function Messages() {
   return (
-    <ChatProvider>
-      <MessagesContent />
-    </ChatProvider>
+    <ThemeWrapper>
+      <ChatProvider>
+        <ChatLayout />
+      </ChatProvider>
+    </ThemeWrapper>
   );
 }
+
 export default Messages;

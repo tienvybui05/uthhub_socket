@@ -1,0 +1,35 @@
+.modalOverlay {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  align-items: stretch;
+  width: 200px;
+  height: auto;
+  background-color: var(--p-white);
+  padding: 4px;
+  left: 5%;
+  bottom: 15%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  border-radius: 3px;
+}
+.wrapper button {
+  cursor: pointer;
+  outline: none;
+  border: none;
+  padding: 10px;
+  background-color: var(--p-white);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+.wrapper button:hover {
+  background-color: var(--p-hover);
+}

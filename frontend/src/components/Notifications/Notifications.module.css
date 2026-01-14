@@ -10,27 +10,17 @@
   display: flex;
   flex-direction: column;
   position: fixed;
+  align-items: stretch;
   width: 360px;
-  height: 600px;
+  height: auto;
   background-color: var(--p-white);
   border-radius: 15px;
   left: 5%;
   bottom: 5%;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  overflow-y: auto;
 }
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--p-white);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--p-700);
-  border-radius: 5px;
-}
+
 .header {
-  width: 100%;
   height: 50px;
   display: flex;
   justify-content: space-between;
@@ -42,14 +32,14 @@
   font-weight: 600;
 }
 .content {
-  width: 100%;
+  align-items: stretch;
 }
 .content .action {
-  width: 100%;
   display: flex;
   align-items: center;
   padding: 0px 10px;
   gap: 8px;
+  padding-bottom: 10px;
 }
 .content .action button {
   padding: 7px 12px;
@@ -79,11 +69,22 @@
   color: var(--p-700);
 } */
 .notifications {
-  flex: 1;
+  align-items: stretch;
+  height: 450px;
   padding: 0px 10px 10px 10px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+
   flex-direction: column;
   gap: 3px;
+  overflow-y: auto;
+}
+.notifications::-webkit-scrollbar {
+  width: 10px;
+}
+.notifications::-webkit-scrollbar-track {
+  background: var(--p-white);
+}
+.notifications::-webkit-scrollbar-thumb {
+  background: var(--p-700);
+  border-radius: 5px;
 }

@@ -38,3 +38,9 @@ export const CONTACTS_MENU = [
     icon: faUserGroup,
   },
 ];
+export const CHAT_BACKGROUND = {
+  DEFAULT: "default",
+  DARK: "dark",
+  LIGHT: "light",
+  PINK: "pink",
+};

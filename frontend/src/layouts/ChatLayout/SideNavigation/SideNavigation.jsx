@@ -19,10 +19,12 @@ import { logout } from "../../../api/auth";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Notifications from "../../../components/Notifications/Notifications";
+import Settings from "../../../components/Settings/Settings";
 
 function SideNavigation() {
   const { leftTab, setLeftTab } = useChat();
   const [isShowNotifications, setIsShowNotifications] = useState(false);
+  const [isShowSetting, setIsShowSetting] = useState(false);
   const navigate = useNavigate();
   const hanldLogout = () => {
     logout();
@@ -31,6 +33,9 @@ function SideNavigation() {
   const handleShowNotifications = () => {
     setIsShowNotifications((prev) => !prev);
   };
+  const hanldeShowSetting = () => {
+    setIsShowSetting((prev) => !prev);
+  };
   const modal = isShowNotifications
     ? createPortal(
         <div>
@@ -38,6 +43,9 @@ function SideNavigation() {
         </div>,
         document.body
       )
+    : null;
+  const modalSetting = isShowSetting
+    ? createPortal(<Settings onClick={hanldeShowSetting} />, document.body)
     : null;
   return (
     <div className={styles.wrapper}>
@@ -61,9 +69,10 @@ function SideNavigation() {
           <FontAwesomeIcon icon={faBell} />
         </NavButton>
         {modal}
-        <NavButton>
+        <NavButton onClick={hanldeShowSetting}>
           <FontAwesomeIcon icon={faGear} />
         </NavButton>
+        {modalSetting}
         <NavButton onClick={hanldLogout}>
           <FontAwesomeIcon icon={faArrowRightFromBracket} />
         </NavButton>
