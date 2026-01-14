@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import ut.edu.uthhub_socket.dto.response.UserResponse;
+import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
 import ut.edu.uthhub_socket.model.Role;
 import ut.edu.uthhub_socket.model.User;
 import ut.edu.uthhub_socket.model.UserStatus;
@@ -85,5 +86,18 @@ public class UserService implements IUserService {
         return new UserResponse(user.get());
     }
 
+    @Override
+    public UserSearchResponse findUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
+        return new UserSearchResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getDateOfBirth(),
+                user.getAvatar()
+        );
+    }
 }

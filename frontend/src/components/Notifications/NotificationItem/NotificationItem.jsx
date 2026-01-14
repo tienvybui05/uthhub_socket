@@ -16,10 +16,10 @@ function NotificationItem({ notifi, onClick }) {
         )}
         {(notifi.style == "FRIEND_REQUEST" ||
           notifi.style == "FRIEND_ACCEPTED") && (
-          <div className={styles.friend}>
-            <FontAwesomeIcon icon={faUser} />
-          </div>
-        )}
+            <div className={styles.friend}>
+              <FontAwesomeIcon icon={faUser} />
+            </div>
+          )}
         {notifi.style == "GROUP" && (
           <div className={styles.friend}>
             <FontAwesomeIcon icon={faPeopleGroup} />
@@ -31,9 +31,8 @@ function NotificationItem({ notifi, onClick }) {
           {notifi.content}
         </p>
         <p
-          className={`${styles.time}  ${
-            notifi.isRead == true ? styles.isRead : ""
-          }`}
+          className={`${styles.time}  ${notifi.isRead == true ? styles.isRead : ""
+            }`}
         >
           {formatDateTime(notifi.createdAt)}
         </p>
