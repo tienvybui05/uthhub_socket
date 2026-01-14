@@ -41,6 +41,7 @@ public class MessageService {
             conversation = conversationRepository.findBetweenUsers(sender.getId(), recipient.getId())
                     .orElseGet(() -> {
                         Conversation newConv = new Conversation();
+                        newConv.setIsGroup(false); // 1-1 chat is not a group
                         newConv.setParticipants(new HashSet<>(Arrays.asList(sender, recipient)));
                         return conversationRepository.save(newConv);
                     });
@@ -57,7 +58,13 @@ public class MessageService {
         conversation.setLastMessageAt(LocalDateTime.now());
         conversationRepository.save(conversation);
 
-        return messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        // Force initialization of lazy collections while in transaction
+        // This prevents LazyInitializationException in the controller
+        savedMessage.getConversation().getParticipants().size();
+
+        return savedMessage;
     }
 
     public List<Conversation> getUserConversations(String username) {

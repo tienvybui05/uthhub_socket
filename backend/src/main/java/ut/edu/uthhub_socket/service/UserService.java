@@ -13,7 +13,6 @@ import ut.edu.uthhub_socket.model.UserStatus;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 import java.util.Optional;
 
-
 @Service
 public class UserService implements IUserService {
 
@@ -79,7 +78,7 @@ public class UserService implements IUserService {
     @Override
     public UserResponse connect(UserResponse response) {
         Optional<User> user = userRepository.findByUsername(response.getUsername());
-        user.ifPresent(u ->{
+        user.ifPresent(u -> {
             u.setStatus(UserStatus.ONLINE);
             userRepository.save(u);
         });
@@ -94,10 +93,9 @@ public class UserService implements IUserService {
         return new UserSearchResponse(
                 user.getId(),
                 user.getUsername(),
+                user.getEmail(), // email comes before fullName in DTO
                 user.getFullName(),
-                user.getEmail(),
                 user.getDateOfBirth(),
-                user.getAvatar()
-        );
+                user.getAvatar());
     }
 }

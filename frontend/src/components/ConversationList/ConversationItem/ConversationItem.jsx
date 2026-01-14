@@ -1,11 +1,13 @@
 import styles from "./ConversationItem.module.css";
 import defaultAvatar from "../../../assets/default_avatar.jpg";
+import { AuthService } from "../../../services/auth.service";
 
 function ConversationItem({
     conversation,
     active,
     onClick,
 }) {
+    const currentUser = AuthService.getUser();
     const {
         name,
         avatarUrl,
@@ -14,7 +16,30 @@ function ConversationItem({
         unreadCount,
         isGroup,
         isOnline,
+        participants,
     } = conversation;
+
+    // Get display name - for 1-1 chat, get the other participant's name
+    const getDisplayName = () => {
+        if (name) return name;
+        if (isGroup) return "Nhóm chat";
+
+        // For 1-1 chat, find the other participant
+        const otherParticipant = participants?.find(p => p.id !== currentUser?.id);
+        return otherParticipant?.fullName || otherParticipant?.username || otherParticipant?.email || "Người dùng";
+    };
+
+    // Get avatar URL
+    const getAvatarUrl = () => {
+        if (avatarUrl) return avatarUrl;
+        if (isGroup) return null;
+
+        const otherParticipant = participants?.find(p => p.id !== currentUser?.id);
+        return otherParticipant?.avatar || otherParticipant?.avatarUrl || null;
+    };
+
+    const displayName = getDisplayName();
+    const displayAvatar = getAvatarUrl();
 
     // Format time display
     const formatTime = (dateString) => {
@@ -51,12 +76,12 @@ function ConversationItem({
             <div className={styles.avatar}>
                 {isGroup ? (
                     <div className={styles.groupAvatar}>
-                        {getInitials(name)}
+                        {getInitials(displayName)}
                     </div>
                 ) : (
                     <img
-                        src={avatarUrl || defaultAvatar}
-                        alt={name}
+                        src={displayAvatar || defaultAvatar}
+                        alt={displayName}
                         className={styles.avatarImg}
                     />
                 )}
@@ -66,7 +91,7 @@ function ConversationItem({
             {/* Content */}
             <div className={styles.content}>
                 <div className={styles.header}>
-                    <span className={styles.name}>{name}</span>
+                    <span className={styles.name}>{displayName}</span>
                     <span className={styles.time}>{formatTime(lastMessageTime)}</span>
                 </div>
                 <div className={styles.footer}>

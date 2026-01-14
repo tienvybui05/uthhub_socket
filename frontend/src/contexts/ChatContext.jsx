@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { CHAT_TABS } from "../constants/contactsMenu";
-import WebSocketService from "../services/WebSocketService";
 import { AuthService } from "../services/auth.service";
 import conversationApi from "../api/conversationApi";
+import WebSocketService from "../services/WebSocketService";
 
 const ChatContext = createContext(null);
 
@@ -22,13 +22,24 @@ export const ChatProvider = ({ children }) => {
   // Current user
   const currentUser = AuthService.getUser();
 
-  // Load conversations
+  // Refs for stable callbacks
+  const currentConversationRef = useRef(currentConversation);
+  const hasInitialized = useRef(false);
+
+  // Keep ref in sync
+  useEffect(() => {
+    currentConversationRef.current = currentConversation;
+  }, [currentConversation]);
+
+  // Load conversations from API
   const loadConversations = useCallback(async () => {
     try {
+      console.log("[ChatContext] loadConversations - calling API...");
       const data = await conversationApi.getConversations();
-      setConversations(data);
+      console.log("[ChatContext] loadConversations - API returned:", data);
+      setConversations(data || []);
     } catch (error) {
-      console.error("Error loading conversations:", error);
+      console.error("[ChatContext] Error loading conversations:", error);
     }
   }, []);
 
@@ -39,113 +50,201 @@ export const ChatProvider = ({ children }) => {
     setIsLoadingMessages(true);
     try {
       const data = await conversationApi.getMessages(conversationId);
-      setMessages(data);
+      setMessages(data || []);
     } catch (error) {
-      console.error("Error loading messages:", error);
+      console.error("[ChatContext] Error loading messages:", error);
+      setMessages([]);
     } finally {
       setIsLoadingMessages(false);
     }
   }, []);
 
+  // Subscribe to specific conversation topic
+  const subscribeToConversation = useCallback((conversationId) => {
+    if (!conversationId) return;
+
+    WebSocketService.subscribe(
+      `/topic/conversation/${conversationId}`,
+      (messageResponse) => {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === messageResponse.id)) return prev;
+          return [...prev, messageResponse];
+        });
+
+        setConversations((prev) =>
+          prev.map((conv) =>
+            conv.id === conversationId
+              ? {
+                ...conv,
+                lastMessage: messageResponse.content,
+                lastMessageAt: messageResponse.createdAt,
+              }
+              : conv
+          )
+        );
+      }
+    );
+  }, []);
+
   // Select a conversation
   const selectConversation = useCallback((conversation) => {
     setCurrentConversation(conversation);
-    if (conversation) {
+    if (conversation && conversation.id) {
       loadMessages(conversation.id);
+      subscribeToConversation(conversation.id);
     } else {
       setMessages([]);
     }
-  }, [loadMessages]);
+  }, [loadMessages, subscribeToConversation]);
+
+  // Start a new conversation with a user
+  const startNewConversation = useCallback((user) => {
+    console.log("[ChatContext] startNewConversation called with user:", user);
+
+    const existing = conversations.find((c) =>
+      c.participants?.some((p) => p.id === user.id)
+    );
+
+    if (existing) {
+      console.log("[ChatContext] Found existing conversation:", existing);
+      selectConversation(existing);
+    } else {
+      console.log("[ChatContext] Creating temp conversation for user:", user.id);
+      const tempConv = {
+        id: null,
+        participants: [user],
+        isTemp: true,
+        recipientId: user.id,
+        name: user.fullName || user.username,
+        avatarUrl: user.avatar || user.avatarUrl,
+        isGroup: false,
+        isOnline: false,
+        lastMessage: "",
+        lastMessageAt: new Date().toISOString(),
+      };
+      setCurrentConversation(tempConv);
+      setMessages([]);
+      console.log("[ChatContext] Temp conversation set:", tempConv);
+    }
+  }, [conversations, selectConversation]);
 
   // Send a message
   const sendMessage = useCallback((content) => {
-    if (!currentConversation || !content.trim()) return;
+    const conv = currentConversationRef.current;
+    console.log("[ChatContext] sendMessage called, content:", content);
+    console.log("[ChatContext] currentConversation:", conv);
 
-    const newMessage = {
-      id: Date.now(),
-      content: content.trim(),
-      createdAt: new Date().toISOString(),
-      isRead: false,
-      sender: {
-        id: currentUser?.id,
-        fullName: currentUser?.fullName,
-      },
-    };
+    if (!conv || !content.trim()) {
+      console.log("[ChatContext] sendMessage aborted - no conv or empty content");
+      return;
+    }
 
-    // Optimistic update
-    setMessages((prev) => [...prev, newMessage]);
+    const messagePayload = { content: content.trim() };
 
-    // Send via WebSocket
-    WebSocketService.send("/app/chat.send", {
-      conversationId: currentConversation.id,
-      content: content.trim(),
-    });
+    if (conv.id) {
+      messagePayload.conversationId = conv.id;
+    } else if (conv.recipientId) {
+      messagePayload.recipientId = conv.recipientId;
+    } else {
+      console.error("[ChatContext] No valid destination for message");
+      return;
+    }
 
-    // Update last message in conversations list
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === currentConversation.id
-          ? {
-            ...conv,
-            lastMessage: content.trim(),
-            lastMessageTime: new Date().toISOString(),
+    console.log("[ChatContext] Sending message payload:", messagePayload);
+    WebSocketService.send("/app/chat.send", messagePayload);
+    console.log("[ChatContext] Message sent via WebSocket");
+  }, []);
+
+  // Initialize WebSocket and subscribe to user queue (ONCE)
+  useEffect(() => {
+    // Guard: Skip if no user OR already initialized
+    if (!currentUser?.id || hasInitialized.current) {
+      return;
+    }
+
+    // Mark as initialized BEFORE async operations
+    hasInitialized.current = true;
+    console.log("[ChatContext] Initializing for user:", currentUser.username);
+
+    WebSocketService.connect(() => {
+      console.log("[ChatContext] WebSocket CONNECTED!");
+
+      // Subscribe to user's personal queue
+      WebSocketService.subscribe(`/user/queue/messages`, (message) => {
+        console.log("[ChatContext] Received message from queue:", message);
+        const latestConversation = currentConversationRef.current;
+
+        // Add message to current view
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+
+        // Upgrade temp conversation to real
+        if (latestConversation?.isTemp && message.conversationId) {
+          setCurrentConversation((prev) => ({
+            ...prev,
+            id: message.conversationId,
+            isTemp: false,
+          }));
+          subscribeToConversation(message.conversationId);
+        }
+
+        // Update conversations list
+        setConversations((prev) => {
+          const existing = prev.find((c) => c.id === message.conversationId);
+          if (existing) {
+            return prev.map((conv) =>
+              conv.id === message.conversationId
+                ? {
+                  ...conv,
+                  lastMessage: message.content,
+                  lastMessageTime: message.createdAt,
+                }
+                : conv
+            );
+          } else {
+            // New conversation, reload all
+            loadConversations();
+            return prev;
           }
-          : conv
-      )
-    );
-  }, [currentConversation, currentUser]);
+        });
+      });
 
-  // Subscribe to messages (call this after WebSocket connects)
-  const subscribeToMessages = useCallback(() => {
-    if (!currentUser) return;
-
-    WebSocketService.subscribe(`/user/queue/messages`, (message) => {
-      // Add received message
-      setMessages((prev) => [...prev, message]);
-
-      // Update conversations list
-      setConversations((prev) =>
-        prev.map((conv) =>
-          conv.id === message.conversationId
-            ? {
-              ...conv,
-              lastMessage: message.content,
-              lastMessageTime: message.createdAt,
-              unreadCount: conv.id !== currentConversation?.id
-                ? (conv.unreadCount || 0) + 1
-                : conv.unreadCount,
-            }
-            : conv
-        )
-      );
+      // Load conversations after connected
+      console.log("[ChatContext] Calling loadConversations...");
+      loadConversations();
     });
-  }, [currentUser, currentConversation]);
+
+    // Cleanup only on unmount, not on re-render
+    return () => {
+      // Only disconnect if component is truly unmounting
+      // hasInitialized stays true to prevent reconnect on StrictMode double-invoke
+    };
+  }, [currentUser?.id]); // Use primitive ID, not object reference
 
   return (
     <ChatContext.Provider
       value={{
-        // Tab navigation
+        // State
         leftTab,
         setLeftTab,
         selected,
         setSelected,
-
-        // Conversations
         conversations,
-        setConversations,
         currentConversation,
-        setCurrentConversation: selectConversation,
-        loadConversations,
-
-        // Messages
         messages,
-        setMessages,
         isLoadingMessages,
-        sendMessage,
+        currentUser,
+        // Actions
+        loadConversations,
         loadMessages,
-
-        // WebSocket
-        subscribeToMessages,
+        selectConversation,
+        startNewConversation,
+        sendMessage,
+        setCurrentConversation,
+        setMessages,
+        setConversations,
       }}
     >
       {children}

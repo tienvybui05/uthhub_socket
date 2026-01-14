@@ -25,6 +25,9 @@ public class Conversation {
     @JoinTable(name = "conversation_users", joinColumns = @JoinColumn(name = "conversation_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<User> participants = new HashSet<>();
 
+    @Column(name = "is_group")
+    private Boolean isGroup = false;
+
     private String lastMessage;
     private LocalDateTime lastMessageAt;
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)

@@ -4,11 +4,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import Avatar from "../Avatar/Avatar";
 import styles from "./AddFriend.module.css";
+import { useChat } from "../../contexts/ChatContext";
 
 import { sendFriendRequest } from "../../api/friends";
 import { searchUserByUsername } from "../../api/users";
 
 function AddFriend({ onClose }) {
+  const { startNewConversation } = useChat();
   const inputRef = useRef(null);
 
   const [keyword, setKeyword] = useState("");
@@ -161,18 +163,29 @@ function AddFriend({ onClose }) {
                 </div>
               </div>
 
-              <button
-                className={styles.addBtn}
-                onClick={handleSendRequest}
-                disabled={isSending || foundUser._requested}
-                title={`Gửi lời mời đến: ${foundUser.username}`}
-              >
-                {foundUser._requested
-                  ? "Đã gửi"
-                  : isSending
-                  ? "Đang gửi..."
-                  : "Kết bạn"}
-              </button>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  className={styles.addBtn}
+                  onClick={() => {
+                    startNewConversation(foundUser);
+                    onClose();
+                  }}
+                  style={{ background: "#0084ff" }}
+                  title="Nhắn tin ngay"
+                >
+                  Nhắn tin
+                </button>
+
+                {/* Keep Friend Request button if needed, or hide it. Shown for completeness */}
+                <button
+                  className={styles.addBtn}
+                  onClick={handleSendRequest}
+                  disabled={isSending || foundUser._requested}
+                  style={{ background: foundUser._requested ? "#ccc" : "#4CAF50" }}
+                >
+                  {foundUser._requested ? "Đã gửi" : "Kết bạn"}
+                </button>
+              </div>
             </div>
           )}
         </div>

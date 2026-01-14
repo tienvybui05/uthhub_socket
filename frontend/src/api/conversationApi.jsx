@@ -1,10 +1,10 @@
 import axiosInstance from "./axiosInstance";
 
 const conversationApi = {
-    getConversations: () => {
+    getConversations: async () => {
         return axiosInstance.get("/conversations");
     },
-    getMessages: (conversationId) => {
+    getMessages: async (conversationId) => {
         return axiosInstance.get(`/conversations/${conversationId}/messages`);
     },
 };

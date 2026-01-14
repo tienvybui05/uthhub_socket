@@ -7,7 +7,7 @@ import styles from "./ChatInput.module.css";
 function ChatInput() {
     const [message, setMessage] = useState("");
     const textareaRef = useRef(null);
-    const { sendMessage, currentConversation } = useChat();
+    const { currentConversation, sendMessage } = useChat();
 
     // Auto resize textarea
     useEffect(() => {

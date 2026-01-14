@@ -8,7 +8,7 @@ import CreateGroupModal from "../CreateGroupModal/CreateGroupModal";
 import styles from "./ConversationList.module.css";
 
 function ConversationList() {
-    const { conversations, currentConversation, setCurrentConversation } = useChat();
+    const { conversations, currentConversation, selectConversation } = useChat();
     const [showDropdown, setShowDropdown] = useState(false);
     const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
     const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
@@ -27,7 +27,7 @@ function ConversationList() {
     }, []);
 
     const handleSelectConversation = (conversation) => {
-        setCurrentConversation(conversation);
+        selectConversation(conversation);  // This will also load messages!
     };
 
     const handleNewChat = () => {

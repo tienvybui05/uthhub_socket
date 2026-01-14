@@ -32,21 +32,38 @@ public class ChatController {
 
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload ChatMessageRequest request, Authentication authentication) {
+        log.info("=== RECEIVED MESSAGE ===");
+        log.info("Request: conversationId={}, recipientId={}, content={}",
+                request.getConversationId(), request.getRecipientId(), request.getContent());
+        log.info("Authentication: {}", authentication);
+        log.info("Username: {}", authentication != null ? authentication.getName() : "NULL");
+
         try {
             Message savedMessage = messageService.sendMessage(authentication.getName(), request);
+            log.info("Message saved with ID: {}", savedMessage.getId());
+
             MessageResponse response = new MessageResponse(savedMessage);
+            log.info("MessageResponse created: {}", response);
 
             // Broadcast to conversation topic so all participants receive the message
-            messagingTemplate.convertAndSend(
-                    "/topic/conversation/" + savedMessage.getConversation().getId(),
-                    response);
+            String topic = "/topic/conversation/" + savedMessage.getConversation().getId();
+            log.info("Broadcasting to topic: {}", topic);
+            messagingTemplate.convertAndSend(topic, response);
 
-            log.info("Message sent to conversation {} by user {}",
-                    savedMessage.getConversation().getId(),
-                    authentication.getName());
+            // Also send to specific users (important for new conversations where they might
+            // not be subscribed to topic yet)
+            savedMessage.getConversation().getParticipants().forEach(participant -> {
+                log.info("Sending to user queue: {}", participant.getUsername());
+                messagingTemplate.convertAndSendToUser(
+                        participant.getUsername(),
+                        "/queue/messages",
+                        response);
+            });
+
+            log.info("=== MESSAGE SENT SUCCESSFULLY ===");
         } catch (Exception e) {
-            log.error("Error sending message: {}", e.getMessage(), e);
-            // You could send error message back to sender if needed
+            log.error("=== ERROR SENDING MESSAGE ===");
+            log.error("Error: {}", e.getMessage(), e);
         }
     }
 

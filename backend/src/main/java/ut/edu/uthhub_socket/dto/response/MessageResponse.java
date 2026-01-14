@@ -12,20 +12,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MessageResponse {
     Long id;
-    Integer senderId;
-    String avatar;
     Long conversationId;
-    String senderName;
     String content;
     LocalDateTime createdAt;
+    SenderInfo sender; // Nested object for frontend compatibility
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class SenderInfo {
+        Integer id;
+        String fullName;
+        String avatarUrl;
+    }
 
     public MessageResponse(Message message) {
         this.id = message.getId();
-        this.senderId = message.getSender().getId();
-        this.avatar = message.getSender().getAvatar();
-        this.senderName = message.getSender().getFullName();
         this.conversationId = message.getConversation().getId();
-        this.createdAt = message.getCreatedAt();
         this.content = message.getContent();
+        this.createdAt = message.getCreatedAt();
+        this.sender = new SenderInfo(
+                message.getSender().getId(),
+                message.getSender().getFullName(),
+                message.getSender().getAvatar());
     }
 }

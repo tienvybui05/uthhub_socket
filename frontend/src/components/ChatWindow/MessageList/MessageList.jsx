@@ -11,6 +11,9 @@ function MessageList() {
     const messagesEndRef = useRef(null);
     const currentUser = AuthService.getUser();
 
+    console.log("[MessageList] Rendering with messages:", messages);
+    console.log("[MessageList] Messages length:", messages?.length);
+
     // Auto scroll to bottom on new messages
     useEffect(() => {
         scrollToBottom();

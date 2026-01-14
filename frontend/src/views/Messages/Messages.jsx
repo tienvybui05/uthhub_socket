@@ -13,25 +13,6 @@ import GlobalDark from "../../styles/GlobalDark/GlobalDark";
 function Messages() {
   const { backgroundColor } = useBackgroundChat();
 
-  useEffect(() => {
-    WebSocketService.connect(
-      () => {
-        const currentUser = AuthService.getUser();
-        if (currentUser) {
-          WebSocketService.send("/app/user/connect", {
-            username: currentUser.username,
-            status: "ONLINE",
-          });
-        }
-      },
-      (error) => {
-        console.log("Lỗi khi kết nối với websocket", error);
-      }
-    );
-
-    return () => WebSocketService.disconnect();
-  }, []);
-
   let ThemeWrapper;
 
   switch (backgroundColor) {
