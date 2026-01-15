@@ -2,6 +2,7 @@ import { CHAT_TABS, CONTACTS_TAB } from "../../../constants/contactsMenu";
 import { useChat } from "../../../contexts/ChatContext";
 import ChatWindow from "../../../components/ChatWindow/ChatWindow";
 import FriendRequests from "../../../components/FriendRequests/FriendRequests";
+import MyFriends from "../../../components/MyFriends/MyFriends";
 function ChatMain() {
   const { leftTab, selected } = useChat();
 
@@ -11,7 +12,7 @@ function ChatMain() {
 
     switch (selected) {
       case CONTACTS_TAB.MY_FRIENDS:
-        return <div>bạn bè</div>;
+        return <MyFriends />;
 
       case CONTACTS_TAB.FRIEND_REQUESTS:
         return <FriendRequests />;

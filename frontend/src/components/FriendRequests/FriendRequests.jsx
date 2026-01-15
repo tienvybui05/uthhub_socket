@@ -11,7 +11,8 @@ import {
 function FriendRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [actingId, setActingId] = useState(null);
+  const [acting, setActing] = useState({ id: null, type: null });
+  // type: "accept" | "reject"
   const [toast, setToast] = useState("");
 
   const showToast = (msg) => {
@@ -78,7 +79,7 @@ function FriendRequests() {
     if (!id) return showToast("Thiếu requestId");
 
     try {
-      setActingId(id);
+      setActing({ id, type: "accept" });
       await acceptFriendRequest(id);
       showToast("✅ Đã đồng ý kết bạn");
       setRequests((prev) => prev.filter((x) => x?.requestId !== id));
@@ -90,7 +91,7 @@ function FriendRequests() {
         "❌ Đồng ý thất bại";
       showToast(msg);
     } finally {
-      setActingId(null);
+      setActing({ id: null, type: null });
     }
   };
 
@@ -99,7 +100,7 @@ function FriendRequests() {
     if (!id) return showToast("Thiếu requestId");
 
     try {
-      setActingId(id);
+      setActing({ id, type: "reject" });
       await rejectFriendRequest(id);
       showToast("✅ Đã từ chối");
       setRequests((prev) => prev.filter((x) => x?.requestId !== id));
@@ -111,7 +112,7 @@ function FriendRequests() {
         "❌ Từ chối thất bại";
       showToast(msg);
     } finally {
-      setActingId(null);
+      setActing({ id: null, type: null });
     }
   };
 
@@ -137,13 +138,15 @@ function FriendRequests() {
           <div className={styles.list}>
             {requests.map((req) => {
               const id = req?.requestId;
-              const disabled = actingId === id;
+
+              const isAccepting = acting.id === id && acting.type === "accept";
+              const isRejecting = acting.id === id && acting.type === "reject";
+              const disabled = isAccepting || isRejecting;
 
               return (
                 <div className={styles.card} key={id}>
                   <div className={styles.cardLeft}>
                     <div className={styles.avatar}>
-                      {/* ✅ nếu Avatar hỗ trợ src */}
                       <Avatar
                         src={req?.avatar || ""}
                         alt={req?.fullName || req?.username || "avatar"}
@@ -151,9 +154,7 @@ function FriendRequests() {
                     </div>
 
                     <div className={styles.meta}>
-                      <p className={styles.name}>
-                        {req?.fullName || "Người dùng"}
-                      </p>
+                      <p className={styles.name}>{req?.fullName || "Người dùng"}</p>
 
                       <p className={styles.sub}>
                         {req?.username ? `@${req.username}` : "—"}
@@ -174,7 +175,7 @@ function FriendRequests() {
                       onClick={() => handleReject(req)}
                       disabled={disabled}
                     >
-                      {disabled ? "..." : "Từ chối"}
+                      {isRejecting ? "Đang..." : "Từ chối"}
                     </button>
 
                     <button
@@ -182,7 +183,7 @@ function FriendRequests() {
                       onClick={() => handleAccept(req)}
                       disabled={disabled}
                     >
-                      {disabled ? "..." : "Đồng ý"}
+                      {isAccepting ? "Đang..." : "Đồng ý"}
                     </button>
                   </div>
                 </div>
