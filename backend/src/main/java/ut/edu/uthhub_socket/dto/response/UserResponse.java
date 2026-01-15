@@ -26,23 +26,20 @@ public class UserResponse {
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.fullName = user.getFullName();
-        this.role = user.getRole().name();
+        this.role = user.getRole() != null ? user.getRole().name() : null;
         this.avatar = user.getAvatar();
-        this.status =user.getStatus().name();
+        this.status = user.getStatus() != null ? user.getStatus().name() : null;
         this.dateOfBirth = user.getDateOfBirth();
     }
+
     public UserResponse(UserDetailsImpl user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.email = user.getEmail();
         this.fullName = user.getFullName();
-        this.role = user.getRole().name();
+        this.role = user.getRole() != null ? user.getRole().name() : null;
         this.avatar = user.getAvatar();
-        this.status =user.getStatus().toString();
+        this.status = user.getStatus() != null ? user.getStatus().toString() : null;
         this.dateOfBirth = user.getDateOfBirth();
-
     }
-
-
 }
-

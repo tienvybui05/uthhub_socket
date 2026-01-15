@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import ut.edu.uthhub_socket.dto.request.UpdateProfileRequest;
 import ut.edu.uthhub_socket.dto.response.UserResponse;
 import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
 import ut.edu.uthhub_socket.model.Role;
@@ -93,9 +94,44 @@ public class UserService implements IUserService {
         return new UserSearchResponse(
                 user.getId(),
                 user.getUsername(),
-                user.getEmail(), // email comes before fullName in DTO
+                user.getEmail(),
                 user.getFullName(),
                 user.getDateOfBirth(),
                 user.getAvatar());
+    }
+
+    @Override
+    public UserResponse getMyProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+        return new UserResponse(user);
+    }
+
+    @Override
+    public UserResponse updateMyProfile(String username, UpdateProfileRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Email đã tồn tại");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+
+        if (request.getAvatar() != null) {
+            user.setAvatar(request.getAvatar());
+        }
+
+        User saved = userRepository.save(user);
+        return new UserResponse(saved);
     }
 }

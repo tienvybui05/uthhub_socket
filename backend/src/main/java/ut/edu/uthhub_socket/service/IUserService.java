@@ -2,6 +2,7 @@ package ut.edu.uthhub_socket.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import ut.edu.uthhub_socket.dto.request.UpdateProfileRequest;
 import ut.edu.uthhub_socket.dto.response.UserResponse;
 import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
 import ut.edu.uthhub_socket.model.Role;
@@ -29,7 +30,12 @@ public interface IUserService {
     void updateRole(Integer userId, Role role);
 
     User register(User user);
+
     UserResponse connect(UserResponse response);
 
     UserSearchResponse findUserByUsername(String username);
+
+    UserResponse getMyProfile(String username);
+
+    UserResponse updateMyProfile(String username, UpdateProfileRequest request);
 }
