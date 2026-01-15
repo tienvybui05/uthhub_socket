@@ -6,12 +6,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ut.edu.uthhub_socket.model.FriendshipStatus;
 
+import java.time.LocalDateTime;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendResponse {
-    private Integer friendId;
+    private Integer requestId;
     private Integer userId;
     private String fullName;
+    private LocalDateTime createdAt;
     private FriendshipStatus status;
+    private String avatar;
+    private String username; // optional
 }
