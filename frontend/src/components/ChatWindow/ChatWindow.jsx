@@ -6,10 +6,11 @@ import ChatHeader from "./ChatHeader/ChatHeader";
 import MessageList from "./MessageList/MessageList";
 import ChatInput from "./ChatInput/ChatInput";
 import ChatInfoPanel from "./ChatInfoPanel/ChatInfoPanel";
+import TypingIndicator from "./TypingIndicator/TypingIndicator";
 import styles from "./ChatWindow.module.css";
 
 function ChatWindow() {
-    const { currentConversation } = useChat();
+    const { currentConversation, typingUsers } = useChat();
     const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
 
     // Empty state when no conversation is selected
@@ -31,6 +32,7 @@ function ChatWindow() {
         <div className={styles.wrapper}>
             <ChatHeader onInfoClick={() => setIsInfoPanelOpen(true)} />
             <MessageList />
+            <TypingIndicator typingUsers={typingUsers} />
             <ChatInput />
             <ChatInfoPanel
                 isOpen={isInfoPanelOpen}
@@ -41,4 +43,3 @@ function ChatWindow() {
 }
 
 export default ChatWindow;
-

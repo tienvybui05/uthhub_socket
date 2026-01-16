@@ -19,6 +19,9 @@ export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  // Typing indicator
+  const [typingUsers, setTypingUsers] = useState([]);
+
   // Current user
   const currentUser = AuthService.getUser();
 
@@ -59,6 +62,32 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
+  // Subscribe to typing events for a conversation
+  const subscribeToTyping = useCallback((conversationId) => {
+    if (!conversationId) return;
+
+    WebSocketService.subscribe(
+      `/topic/conversation/${conversationId}/typing`,
+      (typingData) => {
+        console.log("[ChatContext] Typing event received:", typingData);
+
+        // Don't show typing indicator for current user
+        if (typingData.userId === currentUser?.id) return;
+
+        setTypingUsers((prev) => {
+          if (typingData.typing) {
+            // Add user to typing list if not already there
+            if (prev.some((u) => u.userId === typingData.userId)) return prev;
+            return [...prev, typingData];
+          } else {
+            // Remove user from typing list
+            return prev.filter((u) => u.userId !== typingData.userId);
+          }
+        });
+      }
+    );
+  }, [currentUser?.id]);
+
   // Subscribe to specific conversation topic
   const subscribeToConversation = useCallback((conversationId) => {
     if (!conversationId) return;
@@ -82,6 +111,11 @@ export const ChatProvider = ({ children }) => {
               : conv
           )
         );
+
+        // Clear typing indicator for the sender when message is received
+        setTypingUsers((prev) =>
+          prev.filter((u) => u.userId !== messageResponse.sender?.id)
+        );
       }
     );
   }, []);
@@ -89,13 +123,15 @@ export const ChatProvider = ({ children }) => {
   // Select a conversation
   const selectConversation = useCallback((conversation) => {
     setCurrentConversation(conversation);
+    setTypingUsers([]); // Clear typing users when switching conversations
     if (conversation && conversation.id) {
       loadMessages(conversation.id);
       subscribeToConversation(conversation.id);
+      subscribeToTyping(conversation.id);
     } else {
       setMessages([]);
     }
-  }, [loadMessages, subscribeToConversation]);
+  }, [loadMessages, subscribeToConversation, subscribeToTyping]);
 
   // Start a new conversation with a user
   const startNewConversation = useCallback((user) => {
@@ -153,6 +189,17 @@ export const ChatProvider = ({ children }) => {
     console.log("[ChatContext] Sending message payload:", messagePayload);
     WebSocketService.send("/app/chat.send", messagePayload);
     console.log("[ChatContext] Message sent via WebSocket");
+  }, []);
+
+  // Send typing status
+  const sendTypingStatus = useCallback((isTyping) => {
+    const conv = currentConversationRef.current;
+    if (!conv?.id) return;
+
+    WebSocketService.send("/app/chat.typing", {
+      conversationId: conv.id,
+      typing: isTyping,
+    });
   }, []);
 
   // Initialize WebSocket and subscribe to user queue (ONCE)
@@ -236,12 +283,14 @@ export const ChatProvider = ({ children }) => {
         messages,
         isLoadingMessages,
         currentUser,
+        typingUsers,
         // Actions
         loadConversations,
         loadMessages,
         selectConversation,
         startNewConversation,
         sendMessage,
+        sendTypingStatus,
         setCurrentConversation,
         setMessages,
         setConversations,
