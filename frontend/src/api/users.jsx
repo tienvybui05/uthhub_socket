@@ -6,3 +6,13 @@ export const searchUserByUsername = (username) => {
     params: { username },
   });
 };
+
+// GET /api/users/me
+export const getMyProfile = () => {
+    return axiosInstance.get(`/users/me`);
+};
+
+// PUT /api/users/me
+export const updateMyProfile = (payload) => {
+    return axiosInstance.put(`/users/me`, payload);
+};
