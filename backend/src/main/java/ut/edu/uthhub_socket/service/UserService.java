@@ -8,10 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import ut.edu.uthhub_socket.dto.request.UpdateProfileRequest;
 import ut.edu.uthhub_socket.dto.response.UserResponse;
 import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
+import ut.edu.uthhub_socket.enums.Gender;
 import ut.edu.uthhub_socket.model.Role;
 import ut.edu.uthhub_socket.model.User;
 import ut.edu.uthhub_socket.model.UserStatus;
 import ut.edu.uthhub_socket.repository.IUserRepository;
+
 import java.util.Optional;
 
 @Service
@@ -97,7 +99,9 @@ public class UserService implements IUserService {
                 user.getEmail(),
                 user.getFullName(),
                 user.getDateOfBirth(),
-                user.getAvatar());
+                user.getAvatar(),
+                user.getGender() != null ? user.getGender().name() : null
+        );
     }
 
     @Override
@@ -129,6 +133,14 @@ public class UserService implements IUserService {
 
         if (request.getAvatar() != null) {
             user.setAvatar(request.getAvatar());
+        }
+
+        if (request.getGender() != null) {
+            try {
+                user.setGender(Gender.valueOf(request.getGender()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Giới tính không hợp lệ");
+            }
         }
 
         User saved = userRepository.save(user);

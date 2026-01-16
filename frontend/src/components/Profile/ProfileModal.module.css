@@ -223,6 +223,7 @@
     border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: 10px;
     outline: none;
+    background: #fff;
 }
 
 .input:focus {
@@ -242,6 +243,20 @@
     border-radius: 10px;
     outline: none;
     background: #fff;
+}
+
+.genderRow {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 6px 0;
+}
+
+.genderItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
 }
 
 .footer {
@@ -305,4 +320,128 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* ===== Avatar Editor Modal ===== */
+.editorOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10050;
+}
+
+.editorModal {
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+}
+
+.editorHeader {
+    height: 56px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.editorTitle {
+    font-weight: 600;
+    flex: 1;
+}
+
+.editorBody {
+    padding: 14px 16px 10px;
+}
+
+.canvasWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    border-radius: 12px;
+    background: #f2f3f5;
+}
+
+.dragHint {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.zoomRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.zoomBtn {
+    width: 26px;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.65);
+    font-weight: 700;
+}
+
+.zoom {
+    flex: 1;
+}
+
+.fileInput {
+    display: none;
+}
+
+.editorActions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.pickBtn {
+    flex: 1;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.removeBtn {
+    flex: 0.8;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #f3f4f6;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.editorFooter {
+    height: 72px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 16px;
 }

@@ -1,9 +1,18 @@
+// Avatar.jsx
+import { useEffect, useState } from "react";
 import styles from "./Avatar.module.css";
 import default_avatar from "../../assets/default_avatar.jpg";
 import { AuthService } from "../../services/auth.service";
 
 function Avatar({ src, alt = "avatar", onClick }) {
-    const user = AuthService.getUser();
+    const [user, setUser] = useState(AuthService.getUser());
+
+    useEffect(() => {
+        const handler = () => setUser(AuthService.getUser());
+        window.addEventListener("user_updated", handler);
+        return () => window.removeEventListener("user_updated", handler);
+    }, []);
+
     const imgSrc = src || user?.avatar || default_avatar;
 
     return (

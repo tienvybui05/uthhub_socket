@@ -3,6 +3,7 @@ package ut.edu.uthhub_socket.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import ut.edu.uthhub_socket.enums.Gender;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -34,7 +35,12 @@ public class User {
 
     private LocalDateTime dateOfBirth;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String avatar;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Enumerated(EnumType.STRING)
     private UserStatus status = UserStatus.OFFLINE;
@@ -44,7 +50,6 @@ public class User {
 
     private LocalDateTime createdAt;
 
-    // Friend list 2 chiều
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private Set<Friend> friends = new HashSet<>();

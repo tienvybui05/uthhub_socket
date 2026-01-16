@@ -22,4 +22,6 @@ public class UpdateProfileRequest {
     private LocalDateTime dateOfBirth;
 
     private String avatar;
+
+    private String gender;
 }

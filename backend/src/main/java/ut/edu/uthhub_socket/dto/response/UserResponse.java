@@ -20,6 +20,7 @@ public class UserResponse {
     private LocalDateTime dateOfBirth;
     private String avatar;
     private String status;
+    private String gender;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -30,6 +31,7 @@ public class UserResponse {
         this.avatar = user.getAvatar();
         this.status = user.getStatus() != null ? user.getStatus().name() : null;
         this.dateOfBirth = user.getDateOfBirth();
+        this.gender = user.getGender() != null ? user.getGender().name() : null;
     }
 
     public UserResponse(UserDetailsImpl user) {
@@ -41,5 +43,6 @@ public class UserResponse {
         this.avatar = user.getAvatar();
         this.status = user.getStatus() != null ? user.getStatus().toString() : null;
         this.dateOfBirth = user.getDateOfBirth();
+        this.gender = null;
     }
 }

@@ -16,4 +16,5 @@ public class UserSearchResponse {
     private String fullName;
     private LocalDateTime dateOfBirth;
     private String avatar;
+    private String gender;
 }
