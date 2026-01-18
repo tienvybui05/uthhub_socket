@@ -9,9 +9,8 @@ import ut.edu.uthhub_socket.dto.request.UpdateProfileRequest;
 import ut.edu.uthhub_socket.dto.response.UserResponse;
 import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
 import ut.edu.uthhub_socket.enums.Gender;
-import ut.edu.uthhub_socket.model.Role;
-import ut.edu.uthhub_socket.model.User;
-import ut.edu.uthhub_socket.model.UserStatus;
+import ut.edu.uthhub_socket.model.*;
+import ut.edu.uthhub_socket.repository.IFriendRepository;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 
 import java.util.Optional;
@@ -23,6 +22,9 @@ public class UserService implements IUserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private IUserRepository userRepository;
+
+    @Autowired
+    private IFriendRepository friendRepository;
 
     @Override
     public Optional<User> findById(Integer id) {
@@ -89,18 +91,44 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserSearchResponse findUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserSearchResponse findUserByUsername(String username, Integer meId) {
+
+        User target = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
+        String friendStatus = "NONE";
+
+        Integer requestId = null;
+
+        Optional<Friend> relation =
+                friendRepository.findRelation(meId, target.getId());
+
+        if (relation.isPresent()) {
+            Friend f = relation.get();
+
+            if (f.getStatus() == FriendshipStatus.ACCEPTED) {
+                friendStatus = "FRIEND";
+            }
+            else if (f.getStatus() == FriendshipStatus.PENDING) {
+                requestId = f.getId();
+                if (f.getUser().getId().equals(meId)) {
+                    friendStatus = "PENDING_SENT";
+                } else {
+                    friendStatus = "PENDING_RECEIVED";
+                }
+            }
+        }
+
         return new UserSearchResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getFullName(),
-                user.getDateOfBirth(),
-                user.getAvatar(),
-                user.getGender() != null ? user.getGender().name() : null
+                target.getId(),
+                target.getUsername(),
+                target.getEmail(),
+                target.getFullName(),
+                target.getDateOfBirth(),
+                target.getAvatar(),
+                target.getGender() != null ? target.getGender().name() : null,
+                requestId,
+                friendStatus
         );
     }
 

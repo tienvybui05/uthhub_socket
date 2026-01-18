@@ -9,7 +9,7 @@ public interface IFriendService {
 
     void acceptFriend(Integer requestId, Integer userId);
 
-    void rejectFriend(Integer requestId, Integer userId);
+    void rejectFriendRequest(Integer requestId, Integer userId);
 
     List<FriendResponse> getFriendRequests(Integer userId);
 
@@ -17,4 +17,7 @@ public interface IFriendService {
 
     List<FriendResponse> getSentFriendRequests(Integer userId);
 
+    void cancelFriendRequest(Integer meId, Integer targetId);
+
+    void unfriend(Integer meId, Integer friendId);
 }

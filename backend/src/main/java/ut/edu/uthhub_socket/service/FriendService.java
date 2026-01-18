@@ -11,6 +11,7 @@ import ut.edu.uthhub_socket.repository.IFriendRepository;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,32 +20,44 @@ public class FriendService implements IFriendService{
     private final IUserRepository userRepository;
     private final INotificationsService notificationsService;
     @Override
-    public void sendFriendRequestByUsername(Integer senderId, String receiverUsername) {
+    public void sendFriendRequestByUsername(Integer meId, String username) {
 
-        User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new RuntimeException("Sender not found"));
+        User target = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
 
-        User receiver = userRepository.findByUsername(receiverUsername)
-                .orElseThrow(() -> new RuntimeException("Username không tồn tại"));
+        Integer targetId = target.getId();
 
-        if (sender.getId().equals(receiver.getId()))
+        if (meId.equals(targetId)) {
             throw new RuntimeException("Không thể kết bạn với chính mình");
+        }
 
-        // kiểm tra 2 chiều
-        boolean existed =
-                friendRepository.findByUserIdAndFriendId(sender.getId(), receiver.getId()).isPresent()
-                        || friendRepository.findByFriendIdAndUserId(receiver.getId(), sender.getId()).isPresent();
+        Optional<Friend> relation = friendRepository.findRelation(meId, targetId);
 
-        if (existed)
-            throw new RuntimeException("Đã tồn tại mối quan hệ kết bạn");
+        if (relation.isPresent()) {
+            Friend f = relation.get();
+
+            if (f.getStatus() == FriendshipStatus.ACCEPTED) {
+                throw new RuntimeException("Đã là bạn");
+            }
+
+            if (f.getStatus() == FriendshipStatus.PENDING) {
+                if (f.getUser().getId().equals(meId)) {
+                    throw new RuntimeException("Bạn đã gửi lời mời");
+                } else {
+                    throw new RuntimeException("Người này đã gửi lời mời cho bạn");
+                }
+            }
+        }
+
+        User me = userRepository.findById(meId)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
         Friend friend = new Friend();
-        friend.setUser(sender);
-        friend.setFriend(receiver);
+        friend.setUser(me);       // requester
+        friend.setFriend(target); // receiver
         friend.setStatus(FriendshipStatus.PENDING);
-
+        notificationsService.sendFriendNotification(targetId,me.getId(), StyleNotifications.FRIEND_REQUEST);
         friendRepository.save(friend);
-        notificationsService.sendFriendNotification(receiver.getId(),sender.getId(), StyleNotifications.FRIEND_REQUEST);
     }
 
     @Override
@@ -61,15 +74,18 @@ public class FriendService implements IFriendService{
     }
 
     @Override
-    public void rejectFriend(Integer requestId, Integer userId) {
-        Friend f = friendRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+    public void rejectFriendRequest(Integer requestId, Integer meId) {
 
-        if (!f.getFriend().getId().equals(userId))
-            throw new RuntimeException("Không có quyền");
+        Friend friend = friendRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời"));
 
-        f.setStatus(FriendshipStatus.REJECTED);
-        friendRepository.save(f);
+        // đảm bảo đúng người nhận
+        if (!friend.getFriend().getId().equals(meId)) {
+            throw new RuntimeException("Không có quyền từ chối");
+        }
+
+        // 🔥 DELETE luôn
+        friendRepository.delete(friend);
     }
 
     @Override
@@ -129,4 +145,33 @@ public class FriendService implements IFriendService{
                 ))
                 .toList();
     }
+
+    @Override
+    public void cancelFriendRequest(Integer meId, Integer targetId) {
+
+        Friend f = friendRepository
+                .findByUser_IdAndFriend_IdAndStatus(
+                        meId,
+                        targetId,
+                        FriendshipStatus.PENDING
+                )
+                .orElseThrow(() -> new RuntimeException("Không có lời mời để thu hồi"));
+
+        friendRepository.delete(f);
+    }
+
+    @Override
+    public void unfriend(Integer meId, Integer friendId) {
+
+        Friend f = friendRepository
+                .findRelation(meId, friendId)
+                .orElseThrow(() -> new RuntimeException("Không phải bạn bè"));
+
+        if (f.getStatus() != FriendshipStatus.ACCEPTED) {
+            throw new RuntimeException("Không phải bạn bè");
+        }
+
+        friendRepository.delete(f);
+    }
+
 }

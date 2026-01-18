@@ -7,12 +7,14 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import ut.edu.uthhub_socket.dto.request.UpdateProfileRequest;
 import ut.edu.uthhub_socket.dto.response.UserResponse;
 import ut.edu.uthhub_socket.dto.response.UserSearchResponse;
+import ut.edu.uthhub_socket.security.UserDetailsImpl;
 import ut.edu.uthhub_socket.service.IUserService;
 
 @RestController
@@ -35,12 +37,17 @@ public class UserController {
 
     @GetMapping("/search")
     public ResponseEntity<UserSearchResponse> searchByUsername(
-            @RequestParam String username
+            @RequestParam String username,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         return ResponseEntity.ok(
-                userService.findUserByUsername(username)
+                userService.findUserByUsername(
+                        username,
+                        userDetails.getId()   // 👈 meId
+                )
         );
     }
+
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getMyProfile() {

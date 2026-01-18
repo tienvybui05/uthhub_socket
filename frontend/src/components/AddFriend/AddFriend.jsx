@@ -8,6 +8,11 @@ import { useChat } from "../../contexts/ChatContext";
 
 import { sendFriendRequest } from "../../api/friends";
 import { searchUserByUsername } from "../../api/users";
+import {
+  cancelFriendRequest,
+  acceptFriendRequest,
+  unfriend,
+} from "../../api/friends";
 
 function AddFriend({ onClose }) {
   const { startNewConversation } = useChat();
@@ -21,6 +26,8 @@ function AddFriend({ onClose }) {
   const [foundUser, setFoundUser] = useState(null); // user tìm được
   const [searched, setSearched] = useState(false);  // để biết đã search chưa
 
+  const status = foundUser?.friendStatus;
+
   const handleWrapperClick = (e) => {
     if (e.target === e.currentTarget) onClose?.();
   };
@@ -28,6 +35,45 @@ function AddFriend({ onClose }) {
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 2200);
+  };
+
+  const handleCancel = async () => {
+    try {
+      setIsSending(true);
+      await cancelFriendRequest(foundUser.id);
+      showToast("✅ Đã thu hồi lời mời");
+      setFoundUser((u) => ({ ...u, friendStatus: "NONE" }));
+    } catch (e) {
+      showToast("❌ Thu hồi thất bại");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleAccept = async () => {
+    try {
+      setIsSending(true);
+      await acceptFriendRequest(foundUser.requestId); // 👈 ĐÚNG
+      showToast("✅ Đã đồng ý kết bạn");
+      setFoundUser((u) => ({ ...u, friendStatus: "FRIEND", requestId: null }));
+    } catch {
+      showToast("❌ Đồng ý thất bại");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleUnfriend = async () => {
+    try {
+      setIsSending(true);
+      await unfriend(foundUser.id);
+      showToast("✅ Đã hủy kết bạn");
+      setFoundUser((u) => ({ ...u, friendStatus: "NONE" }));
+    } catch (e) {
+      showToast("❌ Hủy thất bại");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleSearch = async () => {
@@ -82,15 +128,9 @@ function AddFriend({ onClose }) {
       await sendFriendRequest(username);
       showToast("✅ Đã gửi lời mời kết bạn");
 
-      // Optional: khóa nút kết bạn sau khi gửi
-      setFoundUser((prev) => (prev ? { ...prev, _requested: true } : prev));
+      setFoundUser((u) => ({ ...u, friendStatus: "PENDING_SENT" }));
     } catch (err) {
-      console.log("sendFriendRequest error:", err);
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data ||
-        "❌ Gửi lời mời thất bại";
-      showToast(msg);
+      showToast("❌ Gửi lời mời thất bại");
     } finally {
       setIsSending(false);
     }
@@ -112,11 +152,6 @@ function AddFriend({ onClose }) {
 
         {/* Search box */}
         <div className={styles.searchRow}>
-          <div className={styles.country}>
-            <span className={styles.flag} aria-hidden="true">🇻🇳</span>
-            <span className={styles.code}>(+84)</span>
-            <span className={styles.caret} aria-hidden="true">▾</span>
-          </div>
 
           <div className={styles.inputWrap}>
             <input
@@ -180,27 +215,61 @@ function AddFriend({ onClose }) {
                 <span className={styles.meTag}>Bạn</span>
               ) : (
                 <div className={styles.actions}>
+                  {/* Nhắn tin luôn có */}
                   <button
                     className={`${styles.actionBtn} ${styles.actionGhost}`}
                     onClick={() => {
                       startNewConversation(foundUser);
                       onClose();
                     }}
-                    title="Nhắn tin ngay"
-                    disabled={isSending} // optional
+                    disabled={isSending}
                   >
                     Nhắn tin
                   </button>
 
-                  <button
-                    className={`${styles.actionBtn} ${styles.actionPrimary} ${foundUser._requested ? styles.actionDisabled : ""
-                      }`}
-                    onClick={handleSendRequest}
-                    disabled={isSending || foundUser._requested}
-                    title="Gửi lời mời kết bạn"
-                  >
-                    {foundUser._requested ? "Đã gửi" : isSending ? "Đang gửi..." : "Kết bạn"}
-                  </button>
+                  {/* NONE */}
+                  {status === "NONE" && (
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                      onClick={handleSendRequest}
+                      disabled={isSending}
+                    >
+                      Kết bạn
+                    </button>
+                  )}
+
+                  {/* PENDING_SENT */}
+                  {status === "PENDING_SENT" && (
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                      onClick={handleCancel}
+                      disabled={isSending}
+                    >
+                      Thu hồi
+                    </button>
+                  )}
+
+                  {/* PENDING_RECEIVED */}
+                  {status === "PENDING_RECEIVED" && (
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                      onClick={handleAccept}
+                      disabled={isSending}
+                    >
+                      Đồng ý
+                    </button>
+                  )}
+
+                  {/* FRIEND */}
+                  {status === "FRIEND" && (
+                    <button
+                      className={`${styles.actionBtn} ${styles.actionPrimary}`}
+                      onClick={handleUnfriend}
+                      disabled={isSending}
+                    >
+                      Hủy kết bạn
+                    </button>
+                  )}
                 </div>
               )}
             </div>

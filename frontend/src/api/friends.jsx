@@ -11,8 +11,8 @@ export const getFriendRequests = () => {
 };
 
 // chấp nhận: POST /api/friends/{id}/accept
-export const acceptFriendRequest = (id) => {
-  return axiosInstance.post(`/friends/${id}/accept`);
+export const acceptFriendRequest = (requestId) => {
+  return axiosInstance.post(`/friends/${requestId}/accept`);
 };
 
 // từ chối: POST /api/friends/{id}/reject
@@ -32,5 +32,9 @@ export const getSentFriendRequests = () => {
 
 // thu hồi: POST /api/friends/{id}/cancel
 export const cancelFriendRequest = (id) => {
-  return axiosInstance.post(`/friends/${id}/cancel`);
+  return axiosInstance.delete(`/friends/cancel/${id}`);
+};
+
+export const unfriend = (id) => {
+  return axiosInstance.delete(`/friends/unfriend/${id}`);
 };

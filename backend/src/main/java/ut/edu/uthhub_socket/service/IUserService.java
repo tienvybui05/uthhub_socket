@@ -33,7 +33,7 @@ public interface IUserService {
 
     UserResponse connect(UserResponse response);
 
-    UserSearchResponse findUserByUsername(String username);
+    UserSearchResponse findUserByUsername(String username, Integer meId);
 
     UserResponse getMyProfile(String username);
 

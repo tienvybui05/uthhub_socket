@@ -51,7 +51,7 @@ public class FriendController {
             @PathVariable Integer id,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        friendService.rejectFriend(id, userDetails.getId());
+        friendService.rejectFriendRequest(id, userDetails.getId());
         return ResponseEntity.ok("Đã từ chối");
     }
 
@@ -68,4 +68,23 @@ public class FriendController {
     public ResponseEntity<?> getSentRequests(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(friendService.getSentFriendRequests(userDetails.getId()));
     }
+
+    // Thu hồi lời mời
+    @DeleteMapping("/cancel/{targetId}")
+    public void cancelRequest(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Integer targetId
+    ) {
+        friendService.cancelFriendRequest(userDetails.getId(), targetId);
+    }
+
+    // Hủy kết bạn
+    @DeleteMapping("/unfriend/{friendId}")
+    public void unfriend(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Integer friendId
+    ) {
+        friendService.unfriend(userDetails.getId(), friendId);
+    }
+
 }
