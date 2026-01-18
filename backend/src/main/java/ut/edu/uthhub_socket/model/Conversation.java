@@ -28,6 +28,16 @@ public class Conversation {
     @Column(name = "is_group")
     private Boolean isGroup = false;
 
+    @Column(length = 100)
+    private String name; // group name
+
+    @Column(name = "avatar_url")
+    private String avatarUrl; // optional
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private User createdBy; // admin
+
     private String lastMessage;
     private LocalDateTime lastMessageAt;
     @OneToMany(mappedBy = "conversation", fetch = FetchType.LAZY)

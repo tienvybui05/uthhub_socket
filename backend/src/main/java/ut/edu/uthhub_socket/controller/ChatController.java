@@ -22,6 +22,10 @@ import ut.edu.uthhub_socket.model.Message;
 import ut.edu.uthhub_socket.model.User;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 import ut.edu.uthhub_socket.service.MessageService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import ut.edu.uthhub_socket.dto.request.CreateGroupRequest;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -129,4 +133,15 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @PostMapping("/api/conversations/groups")
+    @ResponseBody
+    public ResponseEntity<ConversationResponse> createGroup(
+            @RequestBody CreateGroupRequest request,
+            Authentication authentication
+    ) {
+        Conversation conv = messageService.createGroupConversation(authentication.getName(), request);
+        return ResponseEntity.ok(new ConversationResponse(conv));
+    }
+
 }

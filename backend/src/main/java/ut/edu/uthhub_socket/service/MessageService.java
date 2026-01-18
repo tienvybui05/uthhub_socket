@@ -10,11 +10,14 @@ import ut.edu.uthhub_socket.model.User;
 import ut.edu.uthhub_socket.repository.IConversationRepository;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 import ut.edu.uthhub_socket.repository.IMessageRepository;
+import ut.edu.uthhub_socket.dto.request.CreateGroupRequest;
+
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -76,4 +79,38 @@ public class MessageService {
     public List<Message> getConversationMessages(Long conversationId) {
         return messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
     }
+
+    @Transactional
+    public Conversation createGroupConversation(String username, CreateGroupRequest request) {
+        User creator = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String name = request.getName() != null ? request.getName().trim() : "";
+        if (name.isEmpty()) throw new RuntimeException("Group name is required");
+        if (request.getMemberIds() == null || request.getMemberIds().size() < 2) {
+            throw new RuntimeException("Group must have at least 3 members (including you)");
+        }
+
+        Set<User> participants = new HashSet<>();
+        participants.add(creator);
+
+        for (Integer id : request.getMemberIds()) {
+            User u = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + id));
+            participants.add(u);
+        }
+
+        Conversation conv = new Conversation();
+        conv.setIsGroup(true);
+        conv.setName(name);
+        conv.setAvatarUrl(request.getAvatarUrl());
+        conv.setCreatedBy(creator);
+        conv.setParticipants(participants);
+
+        conv.setLastMessage("Nhóm vừa được tạo");
+        conv.setLastMessageAt(LocalDateTime.now());
+
+        return conversationRepository.save(conv);
+    }
+
 }

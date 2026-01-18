@@ -25,6 +25,7 @@ public interface IConversationRepository extends JpaRepository<Conversation, Lon
             join c.participants u1
             join c.participants u2
             where u1.id = :meId and u2.id = :friendId
+            and c.isGroup = false
             """)
     Optional<Conversation> findBetweenUsers(Integer meId, Integer friendId);
 }

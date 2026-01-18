@@ -115,14 +115,15 @@ function FriendRequests() {
   };
 
   const handleCancel = async (req) => {
-    const id = req?.requestId;
-    if (!id) return showToast("Thiếu requestId");
+    const requestId = req?.requestId;
+    const targetId = req?.userId; //  đúng theo backend /cancel/{targetId}
+    if (!targetId) return showToast("Thiếu userId (targetId)");
 
     try {
-      setActing({ id, type: "cancel" });
-      await cancelFriendRequest(id);
+      setActing({ id: requestId, type: "cancel" }); // dùng requestId để disable button vẫn ok
+      await cancelFriendRequest(targetId);
       showToast("✅ Đã thu hồi lời mời");
-      setSent((prev) => prev.filter((x) => x?.requestId !== id));
+      setSent((prev) => prev.filter((x) => x?.requestId !== requestId));
     } catch (err) {
       console.log("cancelFriendRequest error:", err);
       showToast(err?.response?.data?.message || err?.response?.data || "❌ Thu hồi thất bại");
@@ -130,6 +131,7 @@ function FriendRequests() {
       setActing({ id: null, type: null });
     }
   };
+
 
   return (
     <div className={styles.wrapper}>

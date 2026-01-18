@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { CHAT_TABS } from "../constants/contactsMenu";
 import { AuthService } from "../services/auth.service";
 import conversationApi from "../api/conversationApi";
@@ -63,106 +70,119 @@ export const ChatProvider = ({ children }) => {
   }, []);
 
   // Subscribe to typing events for a conversation
-  const subscribeToTyping = useCallback((conversationId) => {
-    if (!conversationId) return;
+  const subscribeToTyping = useCallback(
+      (conversationId) => {
+        if (!conversationId) return;
 
-    WebSocketService.subscribe(
-      `/topic/conversation/${conversationId}/typing`,
-      (typingData) => {
-        console.log("[ChatContext] Typing event received:", typingData);
+        WebSocketService.subscribe(
+            `/topic/conversation/${conversationId}/typing`,
+            (typingData) => {
+              console.log("[ChatContext] Typing event received:", typingData);
 
-        // Don't show typing indicator for current user
-        if (typingData.userId === currentUser?.id) return;
+              // Don't show typing indicator for current user
+              if (typingData.userId === currentUser?.id) return;
 
-        setTypingUsers((prev) => {
-          if (typingData.typing) {
-            // Add user to typing list if not already there
-            if (prev.some((u) => u.userId === typingData.userId)) return prev;
-            return [...prev, typingData];
-          } else {
-            // Remove user from typing list
-            return prev.filter((u) => u.userId !== typingData.userId);
-          }
-        });
-      }
-    );
-  }, [currentUser?.id]);
+              setTypingUsers((prev) => {
+                if (typingData.typing) {
+                  // Add user to typing list if not already there
+                  if (prev.some((u) => u.userId === typingData.userId)) return prev;
+                  return [...prev, typingData];
+                } else {
+                  // Remove user from typing list
+                  return prev.filter((u) => u.userId !== typingData.userId);
+                }
+              });
+            }
+        );
+      },
+      [currentUser?.id]
+  );
 
   // Subscribe to specific conversation topic
   const subscribeToConversation = useCallback((conversationId) => {
     if (!conversationId) return;
 
     WebSocketService.subscribe(
-      `/topic/conversation/${conversationId}`,
-      (messageResponse) => {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === messageResponse.id)) return prev;
-          return [...prev, messageResponse];
-        });
+        `/topic/conversation/${conversationId}`,
+        (messageResponse) => {
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === messageResponse.id)) return prev;
+            return [...prev, messageResponse];
+          });
 
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === conversationId
-              ? {
-                ...conv,
-                lastMessage: messageResponse.content,
-                lastMessageAt: messageResponse.createdAt,
-              }
-              : conv
-          )
-        );
+          // Update conversation list preview
+          setConversations((prev) =>
+              prev.map((conv) =>
+                  conv.id === conversationId
+                      ? {
+                        ...conv,
+                        lastMessage: messageResponse.content,
+                        lastMessageTime: messageResponse.createdAt,
+                      }
+                      : conv
+              )
+          );
 
-        // Clear typing indicator for the sender when message is received
-        setTypingUsers((prev) =>
-          prev.filter((u) => u.userId !== messageResponse.sender?.id)
-        );
-      }
+          // Clear typing indicator for the sender when message is received
+          setTypingUsers((prev) =>
+              prev.filter((u) => u.userId !== messageResponse.sender?.id)
+          );
+        }
     );
   }, []);
 
   // Select a conversation
-  const selectConversation = useCallback((conversation) => {
-    setCurrentConversation(conversation);
-    setTypingUsers([]); // Clear typing users when switching conversations
-    if (conversation && conversation.id) {
-      loadMessages(conversation.id);
-      subscribeToConversation(conversation.id);
-      subscribeToTyping(conversation.id);
-    } else {
-      setMessages([]);
-    }
-  }, [loadMessages, subscribeToConversation, subscribeToTyping]);
+  const selectConversation = useCallback(
+      (conversation) => {
+        setCurrentConversation(conversation);
+        setTypingUsers([]); // Clear typing users when switching conversations
+        if (conversation && conversation.id) {
+          loadMessages(conversation.id);
+          subscribeToConversation(conversation.id);
+          subscribeToTyping(conversation.id);
+        } else {
+          setMessages([]);
+        }
+      },
+      [loadMessages, subscribeToConversation, subscribeToTyping]
+  );
 
   // Start a new conversation with a user
-  const startNewConversation = useCallback((user) => {
-    console.log("[ChatContext] startNewConversation called with user:", user);
+  const startNewConversation = useCallback(
+      (user) => {
+        console.log("[ChatContext] startNewConversation called with user:", user);
 
-    const existing = conversations.find((c) =>
-      c.participants?.some((p) => p.id === user.id)
-    );
+        const existing = conversations.find((c) =>
+            c.participants?.some((p) => p.id === user.id)
+        );
 
-    if (existing) {
-      console.log("[ChatContext] Found existing conversation:", existing);
-      selectConversation(existing);
-    } else {
-      console.log("[ChatContext] Creating temp conversation for user:", user.id);
-      const tempConv = {
-        id: null,
-        participants: [user],
-        isTemp: true,
-        recipientId: user.id,
-        name: user.fullName || user.username,
-        avatarUrl: user.avatar || user.avatarUrl,
-        isGroup: false,
-        isOnline: false,
-        lastMessage: "",
-        lastMessageAt: new Date().toISOString(),
-      };
-      setCurrentConversation(tempConv);
-      setMessages([]);
-      console.log("[ChatContext] Temp conversation set:", tempConv);
-    }
-  }, [conversations, selectConversation]);
+        if (existing) {
+          console.log("[ChatContext] Found existing conversation:", existing);
+          selectConversation(existing);
+        } else {
+          console.log(
+              "[ChatContext] Creating temp conversation for user:",
+              user.id
+          );
+          const tempConv = {
+            id: null,
+            participants: [user],
+            isTemp: true,
+            recipientId: user.id,
+            name: user.fullName || user.username,
+            avatarUrl: user.avatar || user.avatarUrl,
+            isGroup: false,
+            isOnline: false,
+            lastMessage: "",
+            lastMessageTime: new Date().toISOString(),
+          };
+          setCurrentConversation(tempConv);
+          setMessages([]);
+          console.log("[ChatContext] Temp conversation set:", tempConv);
+        }
+      },
+      [conversations, selectConversation]
+  );
 
   // Send a message
   const sendMessage = useCallback((content) => {
@@ -171,7 +191,9 @@ export const ChatProvider = ({ children }) => {
     console.log("[ChatContext] currentConversation:", conv);
 
     if (!conv || !content.trim()) {
-      console.log("[ChatContext] sendMessage aborted - no conv or empty content");
+      console.log(
+          "[ChatContext] sendMessage aborted - no conv or empty content"
+      );
       return;
     }
 
@@ -242,13 +264,13 @@ export const ChatProvider = ({ children }) => {
           const existing = prev.find((c) => c.id === message.conversationId);
           if (existing) {
             return prev.map((conv) =>
-              conv.id === message.conversationId
-                ? {
-                  ...conv,
-                  lastMessage: message.content,
-                  lastMessageTime: message.createdAt,
-                }
-                : conv
+                conv.id === message.conversationId
+                    ? {
+                      ...conv,
+                      lastMessage: message.content,
+                      lastMessageTime: message.createdAt,
+                    }
+                    : conv
             );
           } else {
             // New conversation, reload all
@@ -271,33 +293,33 @@ export const ChatProvider = ({ children }) => {
   }, [currentUser?.id]); // Use primitive ID, not object reference
 
   return (
-    <ChatContext.Provider
-      value={{
-        // State
-        leftTab,
-        setLeftTab,
-        selected,
-        setSelected,
-        conversations,
-        currentConversation,
-        messages,
-        isLoadingMessages,
-        currentUser,
-        typingUsers,
-        // Actions
-        loadConversations,
-        loadMessages,
-        selectConversation,
-        startNewConversation,
-        sendMessage,
-        sendTypingStatus,
-        setCurrentConversation,
-        setMessages,
-        setConversations,
-      }}
-    >
-      {children}
-    </ChatContext.Provider>
+      <ChatContext.Provider
+          value={{
+            // State
+            leftTab,
+            setLeftTab,
+            selected,
+            setSelected,
+            conversations,
+            currentConversation,
+            messages,
+            isLoadingMessages,
+            currentUser,
+            typingUsers,
+            // Actions
+            loadConversations,
+            loadMessages,
+            selectConversation,
+            startNewConversation,
+            sendMessage,
+            sendTypingStatus,
+            setCurrentConversation,
+            setMessages,
+            setConversations,
+          }}
+      >
+        {children}
+      </ChatContext.Provider>
   );
 };
 

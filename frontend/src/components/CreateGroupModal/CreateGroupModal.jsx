@@ -9,6 +9,9 @@ import {
 import { useChat } from "../../contexts/ChatContext";
 import defaultAvatar from "../../assets/default_avatar.jpg";
 import styles from "./CreateGroupModal.module.css";
+import { getMyFriends } from "../../api/friends";
+import conversationApi from "../../api/conversationApi";
+
 
 function CreateGroupModal({ isOpen, onClose }) {
     const [groupName, setGroupName] = useState("");
@@ -16,9 +19,9 @@ function CreateGroupModal({ isOpen, onClose }) {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
-    const { setCurrentConversation, loadConversations } = useChat();
+    const { selectConversation, loadConversations } = useChat();
 
-    // Load users on mount
+    // Load users on mount/open
     useEffect(() => {
         if (isOpen) {
             loadUsers();
@@ -41,53 +44,26 @@ function CreateGroupModal({ isOpen, onClose }) {
 
     const loadUsers = async () => {
         try {
-            // TODO: Replace with API call when backend is ready
-            // const response = await userApi.getUsers();
-            // setUsers(response.data);
+            const res = await getMyFriends();
+            const list = res?.data ?? res ?? [];
 
-            // Mock data for testing
-            setUsers([
-                {
-                    id: 101,
-                    fullName: "Lê Minh Tuấn",
-                    email: "tuan.le@uth.edu.vn",
-                    avatarUrl: null,
-                },
-                {
-                    id: 102,
-                    fullName: "Phạm Thị Hoa",
-                    email: "hoa.pham@uth.edu.vn",
-                    avatarUrl: null,
-                },
-                {
-                    id: 103,
-                    fullName: "Nguyễn Hoàng Nam",
-                    email: "nam.nguyen@uth.edu.vn",
-                    avatarUrl: null,
-                },
-                {
-                    id: 104,
-                    fullName: "Trần Văn Đức",
-                    email: "duc.tran@uth.edu.vn",
-                    avatarUrl: null,
-                },
-                {
-                    id: 105,
-                    fullName: "Võ Thị Mai",
-                    email: "mai.vo@uth.edu.vn",
-                    avatarUrl: null,
-                },
-                {
-                    id: 106,
-                    fullName: "Hoàng Văn Bình",
-                    email: "binh.hoang@uth.edu.vn",
-                    avatarUrl: null,
-                },
-            ]);
+            // list là FriendResponse[]: { userId, fullName, avatar, username, ... }
+            const mapped = list
+                .filter((x) => (x?.status ?? "").toUpperCase() === "ACCEPTED")
+                .map((f) => ({
+                    id: f.userId,
+                    fullName: f.fullName,
+                    email: f.username || "",     // UI đang hiển thị "email", mình gán username vào
+                    avatarUrl: f.avatar || null,
+                }));
+
+            setUsers(mapped);
         } catch (error) {
-            console.error("Error loading users:", error);
+            console.error("Error loading friends:", error);
+            setUsers([]);
         }
     };
+
 
     const toggleMember = (user) => {
         if (selectedMembers.find((m) => m.id === user.id)) {
@@ -104,33 +80,21 @@ function CreateGroupModal({ isOpen, onClose }) {
     const handleCreateGroup = async () => {
         if (!groupName.trim() || selectedMembers.length < 2) return;
 
-        // TODO: Create group via API
-        // const response = await groupApi.createGroup({
-        //   name: groupName,
-        //   memberIds: selectedMembers.map(m => m.id),
-        // });
+        try {
+            const payload = {
+                name: groupName.trim(),
+                memberIds: selectedMembers.map((m) => m.id),
+                avatarUrl: null,
+            };
 
-        // For now, create a mock group conversation
-        const newGroup = {
-            id: Date.now(),
-            name: groupName.trim(),
-            avatarUrl: null,
-            isGroup: true,
-            participantCount: selectedMembers.length + 1, // +1 for current user
-            members: selectedMembers.map((m) => ({
-                id: m.id,
-                fullName: m.fullName,
-                avatarUrl: m.avatarUrl,
-                role: "Thành viên",
-            })),
-            lastMessage: "Nhóm vừa được tạo",
-            lastMessageTime: new Date().toISOString(),
-            unreadCount: 0,
-        };
+            const created = await conversationApi.createGroup(payload);
 
-        setCurrentConversation(newGroup);
-        loadConversations();
-        handleClose();
+            await loadConversations();
+            selectConversation(created);
+            handleClose();
+        } catch (e) {
+            console.error("Create group failed:", e);
+        }
     };
 
     const handleClose = () => {
@@ -143,7 +107,12 @@ function CreateGroupModal({ isOpen, onClose }) {
     // Get initials for avatar preview
     const getInitials = (name) => {
         if (!name) return "N";
-        return name.split(" ").map((n) => n[0]).join("").substring(0, 2).toUpperCase();
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .substring(0, 2)
+            .toUpperCase();
     };
 
     const isValid = groupName.trim() && selectedMembers.length >= 2;
@@ -195,8 +164,8 @@ function CreateGroupModal({ isOpen, onClose }) {
                         <div className={styles.sectionHeader}>
                             <span className={styles.sectionTitle}>Thêm thành viên</span>
                             <span className={styles.memberCount}>
-                                Đã chọn: {selectedMembers.length}/∞
-                            </span>
+                Đã chọn: {selectedMembers.length}/∞
+              </span>
                         </div>
 
                         {/* Search Box */}
@@ -240,13 +209,15 @@ function CreateGroupModal({ isOpen, onClose }) {
                                 return (
                                     <div
                                         key={user.id}
-                                        className={`${styles.userItem} ${isSelected ? styles.userItemSelected : ""
-                                            }`}
+                                        className={`${styles.userItem} ${
+                                            isSelected ? styles.userItemSelected : ""
+                                        }`}
                                         onClick={() => toggleMember(user)}
                                     >
                                         <div
-                                            className={`${styles.checkbox} ${isSelected ? styles.checkboxChecked : ""
-                                                }`}
+                                            className={`${styles.checkbox} ${
+                                                isSelected ? styles.checkboxChecked : ""
+                                            }`}
                                         >
                                             {isSelected && <FontAwesomeIcon icon={faCheck} />}
                                         </div>
