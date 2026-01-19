@@ -148,12 +148,6 @@
   min-width: 0;
 }
 
-.avatar {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
-}
-
 .meta {
   display: flex;
   flex-direction: column;
@@ -288,4 +282,117 @@
 
 .btnMore:hover {
   filter: brightness(0.98);
+}
+
+/* 1 hàng 3 item giống "đã gửi" */
+.receivedGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .receivedGrid3 {
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .receivedGrid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* card received gọn như sentCard */
+.receivedCard {
+  background: var(--p-white);
+  border: 1px solid var(--p-hover);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receivedCard:hover {
+  background: var(--p-hover);
+}
+
+/* hàng trên: avatar+meta bên trái, icon chat bên phải */
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* icon chat nhỏ gọn */
+.chatIconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--p-hover);
+  background: #eef1f5;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.chatIconBtn:hover {
+  filter: brightness(0.98);
+}
+
+/* 2 nút chia đôi giống Zalo */
+.btnRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.btnReject2,
+.btnAccept2 {
+  height: 38px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.btnReject2 {
+  border: 1px solid var(--p-hover);
+  background: #eeeeee;
+  cursor: pointer;
+}
+
+.btnAccept2 {
+  border: none;
+  background: var(--p-600);
+  color: white;
+  cursor: pointer;
+}
+
+.btnReject2:disabled,
+.btnAccept2:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chatIconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--p-hover);
+  background: #eef1f5;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }

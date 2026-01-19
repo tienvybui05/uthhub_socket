@@ -9,6 +9,8 @@ import {
     getSentFriendRequests,
     cancelFriendRequest,
 } from "../../api/friends";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMessage } from "@fortawesome/free-regular-svg-icons";
 
 function FriendRequests() {
     const [received, setReceived] = useState([]);
@@ -148,7 +150,7 @@ function FriendRequests() {
                 )}
 
                 {!loading && receivedCount > 0 && (
-                    <div className={styles.receivedList}>
+                    <div className={styles.receivedGrid3}>
                         {received.map((req) => {
                             const id = req?.requestId;
                             const isAccepting = acting.id === id && acting.type === "accept";
@@ -156,36 +158,51 @@ function FriendRequests() {
                             const disabled = isAccepting || isRejecting;
 
                             return (
-                                <div className={styles.card} key={id}>
-                                    <div className={styles.cardLeft}>
-                                        <div className={styles.avatar}>
-                                            <Avatar
-                                                src={req?.avatar || req?.avatarUrl || ""}
-                                                alt={req?.fullName || req?.username || "avatar"}
-                                            />
-                                        </div>
+                                <div className={styles.receivedCard} key={id}>
+                                    <div className={styles.cardTop}>
+                                        <div className={styles.sentTop}>
+                                            <div className={styles.avatar}>
+                                                <Avatar
+                                                    src={req?.avatar || req?.avatarUrl || ""}
+                                                    alt={req?.fullName || req?.username || "avatar"}
+                                                />
+                                            </div>
 
-                                        <div className={styles.meta}>
-                                            <p className={styles.name}>{req?.fullName || "Người dùng"}</p>
-                                            <p className={styles.sub}>
-                                                {req?.username ? `@${req.username}` : "—"}
-                                                {req?.createdAt ? ` • ${formatTime(req.createdAt)}` : ""}
-                                            </p>
-
-                                            {req?.message && (
-                                                <p className={styles.msg} title={req.message}>
-                                                    {req.message}
+                                            <div className={styles.sentMeta}>
+                                                <p className={styles.name}>{req?.fullName || "Người dùng"}</p>
+                                                <p className={styles.sub}>
+                                                    {req?.username ? `@${req.username}` : "—"}
+                                                    {req?.createdAt ? ` • ${formatTime(req.createdAt)}` : ""}
                                                 </p>
-                                            )}
+                                            </div>
                                         </div>
+
+                                        {/* icon nhắn tin (UI only) */}
+                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button">
+                                            <FontAwesomeIcon icon={faMessage} />
+                                        </button>
                                     </div>
 
-                                    <div className={styles.actions}>
-                                        <button className={styles.btnReject} onClick={() => handleReject(req)} disabled={disabled}>
+                                    {req?.message && (
+                                        <div className={styles.requestMsg} title={req.message}>
+                                            {req.message}
+                                        </div>
+                                    )}
+
+                                    <div className={styles.btnRow}>
+                                        <button
+                                            className={styles.btnReject2}
+                                            onClick={() => handleReject(req)}
+                                            disabled={disabled}
+                                        >
                                             {isRejecting ? "Đang..." : "Từ chối"}
                                         </button>
 
-                                        <button className={styles.btnAccept} onClick={() => handleAccept(req)} disabled={disabled}>
+                                        <button
+                                            className={styles.btnAccept2}
+                                            onClick={() => handleAccept(req)}
+                                            disabled={disabled}
+                                        >
                                             {isAccepting ? "Đang..." : "Đồng ý"}
                                         </button>
                                     </div>
@@ -212,20 +229,27 @@ function FriendRequests() {
 
                             return (
                                 <div className={styles.sentCard} key={id}>
-                                    <div className={styles.sentTop}>
-                                        <div className={styles.avatar}>
-                                            <Avatar
-                                                src={req?.avatar || req?.avatarUrl || ""}
-                                                alt={req?.fullName || req?.username || "avatar"}
-                                            />
+                                    <div className={styles.cardTop}>
+                                        <div className={styles.sentTop}>
+                                            <div className={styles.avatar}>
+                                                <Avatar
+                                                    src={req?.avatar || req?.avatarUrl || ""}
+                                                    alt={req?.fullName || req?.username || "avatar"}
+                                                />
+                                            </div>
+
+                                            <div className={styles.sentMeta}>
+                                                <p className={styles.name}>{req?.fullName || "Người dùng"}</p>
+                                                <p className={styles.sub}>
+                                                    {req?.createdAt ? formatTime(req.createdAt) : "Bạn đã gửi lời mời"}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div className={styles.sentMeta}>
-                                            <p className={styles.name}>{req?.fullName || "Người dùng"}</p>
-                                            <p className={styles.sub}>
-                                                {req?.createdAt ? formatTime(req.createdAt) : "Bạn đã gửi lời mời"}
-                                            </p>
-                                        </div>
+                                        {/* icon nhắn tin (UI only) */}
+                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button">
+                                            <FontAwesomeIcon icon={faMessage} />
+                                        </button>
                                     </div>
 
                                     <button

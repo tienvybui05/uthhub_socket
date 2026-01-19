@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import styles from "./MyFriends.module.css";
 import Avatar from "../Avatar/Avatar";
 import { getMyFriends } from "../../api/friends";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 function MyFriends() {
     const [friends, setFriends] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -127,7 +128,9 @@ function MyFriends() {
 
                 <div className={styles.toolbar}>
                     <div className={styles.searchWrap}>
-                        <span className={styles.searchIcon}>🔍</span>
+                        <span className={styles.searchIcon}>
+                            <FontAwesomeIcon icon={faMagnifyingGlass} />
+                        </span>
                         <input
                             className={styles.searchInput}
                             placeholder="Tìm bạn"
