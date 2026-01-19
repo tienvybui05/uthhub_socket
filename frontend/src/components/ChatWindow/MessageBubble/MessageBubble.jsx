@@ -3,7 +3,7 @@ import { faCheck, faCheckDouble } from "@fortawesome/free-solid-svg-icons";
 import Avatar from "../../Avatar/Avatar";
 import styles from "./MessageBubble.module.css";
 
-function MessageBubble({ message, isSent, showAvatar, showSenderName, onAvatarClick }) {
+function MessageBubble({ message, isSent, showAvatar, showSenderName, onAvatarClick, isLastSent }) {
     const { content, createdAt, isRead, sender } = message;
 
     const formatTime = (dateString) => {
@@ -37,10 +37,15 @@ function MessageBubble({ message, isSent, showAvatar, showSenderName, onAvatarCl
                     <span className={styles.time}>{formatTime(createdAt)}</span>
                     {isSent && (
                         <span className={`${styles.readStatus} ${isRead ? styles.readStatusRead : ""}`}>
-              <FontAwesomeIcon icon={isRead ? faCheckDouble : faCheck} />
-            </span>
+                            <FontAwesomeIcon icon={isRead ? faCheckDouble : faCheck} />
+                        </span>
                     )}
                 </div>
+
+                {/* Show "Đã xem" text below the last sent message */}
+                {isSent && isLastSent && isRead && (
+                    <span className={styles.seenText}>Đã xem</span>
+                )}
             </div>
         </div>
     );

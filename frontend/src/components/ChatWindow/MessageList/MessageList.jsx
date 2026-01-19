@@ -92,14 +92,21 @@ function MessageList({ onAvatarClick }) {
                     const isSent = Number(message?.sender?.id) === Number(currentUser?.id);
                     const showAvatar = !isSent && shouldShowAvatar(groupedMessages, index, message);
 
+                    // Check if this is the last sent message to show read avatar
+                    const isLastSentMessage = isSent &&
+                        !groupedMessages.slice(index + 1).some(g =>
+                            g.type === "message" && Number(g.message?.sender?.id) === Number(currentUser?.id)
+                        );
+
                     return (
                         <MessageBubble
-                            key={item.id}
+                            key={`${item.id}-${message.isRead}`}
                             message={message}
                             isSent={isSent}
                             showAvatar={showAvatar}
                             showSenderName={isGroup && !isSent}
                             onAvatarClick={onAvatarClick}
+                            isLastSent={isLastSentMessage}
                         />
                     );
                 })

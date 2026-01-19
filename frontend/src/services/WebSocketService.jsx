@@ -43,13 +43,31 @@ class WebSocketService {
   }
 
   subscribe(topic, callback) {
-    if (!this.client || !this.client.connected) return;
-    return this.client.subscribe(topic, (msg) =>
-      callback(JSON.parse(msg.body))
-    );
+    if (!this.client || !this.client.connected) {
+      console.warn("[WebSocketService] Cannot subscribe - not connected! topic:", topic);
+      return null;
+    }
+
+    // Unsubscribe from existing if any
+    if (this.subscriptions[topic]) {
+      console.log("[WebSocketService] Unsubscribing from existing topic:", topic);
+      this.subscriptions[topic].unsubscribe();
+    }
+
+    console.log("[WebSocketService] Subscribing to:", topic);
+    const subscription = this.client.subscribe(topic, (msg) => {
+      console.log("[WebSocketService] Received message on:", topic);
+      callback(JSON.parse(msg.body));
+    });
+
+    this.subscriptions[topic] = subscription;
+    console.log("[WebSocketService] Successfully subscribed to:", topic);
+    return subscription;
   }
+
   unsubscribe(topic) {
     if (this.subscriptions[topic]) {
+      console.log("[WebSocketService] Unsubscribing from:", topic);
       this.subscriptions[topic].unsubscribe();
       delete this.subscriptions[topic];
     }

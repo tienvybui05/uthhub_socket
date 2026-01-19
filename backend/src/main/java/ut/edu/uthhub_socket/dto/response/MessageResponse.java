@@ -15,6 +15,7 @@ public class MessageResponse {
     Long conversationId;
     String content;
     LocalDateTime createdAt;
+    Boolean isRead;
     SenderInfo sender; // Nested object for frontend compatibility
 
     @Data
@@ -31,6 +32,7 @@ public class MessageResponse {
         this.conversationId = message.getConversation().getId();
         this.content = message.getContent();
         this.createdAt = message.getCreatedAt();
+        this.isRead = message.getIsRead();
         this.sender = new SenderInfo(
                 message.getSender().getId(),
                 message.getSender().getFullName(),

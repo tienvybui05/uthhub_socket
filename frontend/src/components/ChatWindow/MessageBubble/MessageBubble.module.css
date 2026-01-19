@@ -96,3 +96,22 @@
 .readStatusRead {
     color: var(--p-600);
 }
+
+.readAvatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.readAvatar img {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.seenText {
+    font-size: 11px;
+    color: var(--n-500);
+    margin-top: 2px;
+    text-align: right;
+}

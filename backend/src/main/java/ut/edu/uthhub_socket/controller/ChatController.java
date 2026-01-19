@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ut.edu.uthhub_socket.dto.request.ChatMessageRequest;
+import ut.edu.uthhub_socket.dto.request.ReadReceiptRequest;
 import ut.edu.uthhub_socket.dto.request.TypingRequest;
 import ut.edu.uthhub_socket.dto.response.ConversationResponse;
 import ut.edu.uthhub_socket.dto.response.MessageResponse;
+import ut.edu.uthhub_socket.dto.response.ReadReceiptResponse;
 import ut.edu.uthhub_socket.dto.response.TypingResponse;
 import ut.edu.uthhub_socket.model.Conversation;
 import ut.edu.uthhub_socket.model.Message;
@@ -25,7 +27,6 @@ import ut.edu.uthhub_socket.service.MessageService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import ut.edu.uthhub_socket.dto.request.CreateGroupRequest;
-
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -103,6 +104,36 @@ public class ChatController {
         }
     }
 
+    @MessageMapping("/chat.markRead")
+    public void markAsRead(@Payload ReadReceiptRequest request, Authentication authentication) {
+        log.info("=== MARK AS READ ===");
+        log.info("ConversationId: {}, User: {}", request.getConversationId(), authentication.getName());
+
+        try {
+            User reader = messageService.markMessagesAsRead(authentication.getName(), request.getConversationId());
+
+            if (reader != null) {
+                ReadReceiptResponse response = new ReadReceiptResponse(
+                        request.getConversationId(),
+                        reader.getId(),
+                        reader.getFullName(),
+                        reader.getAvatar());
+
+                // Broadcast to conversation /read topic
+                String readTopic = "/topic/conversation/" + request.getConversationId() + "/read";
+                log.info("Broadcasting to: {}", readTopic);
+                messagingTemplate.convertAndSend(readTopic, response);
+
+                // Also broadcast to the main conversation topic (which we know works)
+                String mainTopic = "/topic/conversation/" + request.getConversationId();
+                log.info("Also broadcasting to main topic: {}", mainTopic);
+                messagingTemplate.convertAndSend(mainTopic, response);
+            }
+        } catch (Exception e) {
+            log.error("Error marking messages as read: {}", e.getMessage(), e);
+        }
+    }
+
     @GetMapping("/api/conversations")
     @ResponseBody
     public ResponseEntity<List<ConversationResponse>> getConversations(Authentication authentication) {
@@ -138,8 +169,7 @@ public class ChatController {
     @ResponseBody
     public ResponseEntity<ConversationResponse> createGroup(
             @RequestBody CreateGroupRequest request,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         Conversation conv = messageService.createGroupConversation(authentication.getName(), request);
         return ResponseEntity.ok(new ConversationResponse(conv));
     }

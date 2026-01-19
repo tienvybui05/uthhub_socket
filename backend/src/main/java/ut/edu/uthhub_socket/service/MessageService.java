@@ -1,6 +1,7 @@
 package ut.edu.uthhub_socket.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ut.edu.uthhub_socket.dto.request.ChatMessageRequest;
@@ -12,13 +13,13 @@ import ut.edu.uthhub_socket.repository.IUserRepository;
 import ut.edu.uthhub_socket.repository.IMessageRepository;
 import ut.edu.uthhub_socket.dto.request.CreateGroupRequest;
 
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -86,7 +87,8 @@ public class MessageService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String name = request.getName() != null ? request.getName().trim() : "";
-        if (name.isEmpty()) throw new RuntimeException("Group name is required");
+        if (name.isEmpty())
+            throw new RuntimeException("Group name is required");
         if (request.getMemberIds() == null || request.getMemberIds().size() < 2) {
             throw new RuntimeException("Group must have at least 3 members (including you)");
         }
@@ -111,6 +113,28 @@ public class MessageService {
         conv.setLastMessageAt(LocalDateTime.now());
 
         return conversationRepository.save(conv);
+    }
+
+    @Transactional
+    public User markMessagesAsRead(String username, Long conversationId) {
+        User reader = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        int updatedCount = messageRepository.markAsRead(conversationId, reader.getId());
+        log.info("Marked {} messages as read for conversation {}", updatedCount, conversationId);
+
+        // Always return reader so broadcast happens (even if no new messages to mark)
+        return reader;
+    }
+
+    @Transactional(readOnly = true)
+    public Conversation getConversationById(Long conversationId) {
+        Conversation conversation = conversationRepository.findById(conversationId).orElse(null);
+        if (conversation != null) {
+            // Force initialization of participants to avoid lazy loading issues
+            conversation.getParticipants().size();
+        }
+        return conversation;
     }
 
 }
