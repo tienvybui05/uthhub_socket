@@ -21,7 +21,7 @@ function NotificationItem({ notifi, onClick }) {
                         <FontAwesomeIcon icon={faUser} />
                     </div>
                 )}
-                {notifi.style == "GROUP" && (
+                {notifi.style == "CREATEGROUP" && (
                     <div className={styles.friend}>
                         <FontAwesomeIcon icon={faPeopleGroup} />
                     </div>

@@ -21,8 +21,11 @@ import ut.edu.uthhub_socket.dto.response.ReadReceiptResponse;
 import ut.edu.uthhub_socket.dto.response.TypingResponse;
 import ut.edu.uthhub_socket.model.Conversation;
 import ut.edu.uthhub_socket.model.Message;
+import ut.edu.uthhub_socket.model.StyleNotifications;
 import ut.edu.uthhub_socket.model.User;
 import ut.edu.uthhub_socket.repository.IUserRepository;
+import ut.edu.uthhub_socket.security.UserDetailsImpl;
+import ut.edu.uthhub_socket.service.INotificationsService;
 import ut.edu.uthhub_socket.service.MessageService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,7 +42,7 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
     private final IUserRepository userRepository;
-
+    private final INotificationsService notificationsService;
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload ChatMessageRequest request, Authentication authentication) {
         log.info("=== RECEIVED MESSAGE ===");
@@ -170,7 +173,9 @@ public class ChatController {
     public ResponseEntity<ConversationResponse> createGroup(
             @RequestBody CreateGroupRequest request,
             Authentication authentication) {
+        UserDetailsImpl user = (UserDetailsImpl) authentication.getPrincipal();
         Conversation conv = messageService.createGroupConversation(authentication.getName(), request);
+        notificationsService.createGroupNotification(user.getId(),request.getMemberIds(), request.getName(),StyleNotifications.CREATEGROUP);
         return ResponseEntity.ok(new ConversationResponse(conv));
     }
 

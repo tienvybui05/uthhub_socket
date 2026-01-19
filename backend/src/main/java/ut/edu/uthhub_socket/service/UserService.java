@@ -13,6 +13,7 @@ import ut.edu.uthhub_socket.model.*;
 import ut.edu.uthhub_socket.repository.IFriendRepository;
 import ut.edu.uthhub_socket.repository.IUserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -178,5 +179,10 @@ public class UserService implements IUserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         return new UserResponse(user);
+    }
+    @Override
+    public List<User> findAllByIds(List<Integer> ids) {
+        List<User> users = userRepository.findAllById(ids);
+        return users;
     }
 }

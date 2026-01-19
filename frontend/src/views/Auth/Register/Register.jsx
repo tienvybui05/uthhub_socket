@@ -12,6 +12,7 @@ import styles from "./Register.module.css";
 import bg from "../../../assets/background_uth.jpg";
 import logo from "../../../assets/logo_full.png";
 import { register } from "../../../api/auth";
+import { toast } from "react-toastify";
 
 function Register() {
   const [form, setForm] = useState({
@@ -53,8 +54,9 @@ function Register() {
       setLoading(true);
 
       await register(registerData);
-      alert("Đăng ký thành công!");
-      window.location.href = "/login";
+      toast.success("Đăng ký thành công!");
+
+      // window.location.href = "/login";
     } catch (err) {
       setError(err.response?.data || "Đăng ký thất bại");
     } finally {

@@ -40,4 +40,5 @@ public interface IUserService {
     UserResponse updateMyProfile(String username, UpdateProfileRequest request);
 
     UserResponse getUserById(Integer id);
+    List<User> findAllByIds(List<Integer> ids);
 }

@@ -5,5 +5,6 @@ public enum StyleNotifications {
     FRIEND_ACCEPTED,
     FRIEND_REJECTED,
     MESSAGE,
-    SYSTEM
+    SYSTEM,
+    CREATEGROUP
 }

@@ -11,4 +11,5 @@ List<NotificationsResponse> getAllNotificationsByUserId(Integer userId);
 List<NotificationsResponse> findAllByUserIdAndIsReadFalse(Integer userId);
 void updateNotificationsById(Integer meId,Long notificationId);
 void sendFriendNotification(Integer userId,Integer idUser, StyleNotifications styleNotifications);
+void createGroupNotification(Integer userId,List<Integer> receives,String nameGroup, StyleNotifications styleNotifications);
 }

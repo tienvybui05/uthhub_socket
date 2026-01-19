@@ -1,5 +1,6 @@
 package ut.edu.uthhub_socket.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -91,6 +92,29 @@ public class NotificationsService implements INotificationsService {
                 "/topic/notifications/" + userId,
                 new NotificationsResponse(saved)
         );
+    }
+
+    @Transactional
+    @Override
+    public void createGroupNotification(Integer userId, List<Integer> receives,String nameGroup, StyleNotifications styleNotifications) {
+        User sender = userService.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người gửi"));
+        List<User> receivers = userService.findAllByIds(receives);
+        if (receivers.size() != receives.size()) {
+            throw new RuntimeException("Danh sách người nhận không hợp lệ");
+        }
+        for (User receiver : receivers){
+            Notifications notification = new Notifications();
+            notification.setUser(receiver);
+            notification.setSender(sender);
+            notification.setContent(sender.getFullName() + " đã thêm bạn vào nhóm "+nameGroup);
+            notification.setStyle(styleNotifications);
+            Notifications saved = notificationsRepository.save(notification);
+            messagingTemplate.convertAndSend(
+                    "/topic/notifications/" + receiver.getId(),
+                    new NotificationsResponse(saved)
+            );
+        }
     }
 
 
