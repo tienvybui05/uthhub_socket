@@ -33,11 +33,21 @@ export const ChatProvider = ({ children }) => {
   const [readBy, setReadBy] = useState(null);
 
   // Current user
-  const currentUser = AuthService.getUser();
+  const [currentUser, setCurrentUser] = useState(AuthService.getUser());
 
   // Refs for stable callbacks
   const currentConversationRef = useRef(currentConversation);
   const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    const handler = () => setCurrentUser(AuthService.getUser());
+    window.addEventListener("user_updated", handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener("user_updated", handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, []);
 
   // Keep ref in sync
   useEffect(() => {
@@ -81,6 +91,12 @@ export const ChatProvider = ({ children }) => {
       console.error("[ChatContext] Error loading conversations:", error);
     }
   }, [currentUser?.username]);
+
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    loadConversations();
+  }, [currentUser?.id, loadConversations]);
 
   // Load messages for a conversation
   const loadMessages = useCallback(async (conversationId) => {
