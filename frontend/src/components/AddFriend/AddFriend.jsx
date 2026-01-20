@@ -8,6 +8,7 @@ import { useChat } from "../../contexts/ChatContext";
 
 import { sendFriendRequest } from "../../api/friends";
 import { searchUserByUsername } from "../../api/users";
+import { CHAT_TABS } from "../../constants/contactsMenu";
 import {
   cancelFriendRequest,
   acceptFriendRequest,
@@ -15,7 +16,7 @@ import {
 } from "../../api/friends";
 
 function AddFriend({ onClose }) {
-  const { startNewConversation } = useChat();
+  const { startNewConversation, setLeftTab } = useChat();
   const inputRef = useRef(null);
 
   const [keyword, setKeyword] = useState("");
@@ -213,6 +214,7 @@ function AddFriend({ onClose }) {
                     className={`${styles.actionBtn} ${styles.actionGhost}`}
                     onClick={() => {
                       startNewConversation(foundUser);
+                      setLeftTab(CHAT_TABS.MESSAGES);
                       onClose();
                     }}
                     disabled={isSending}

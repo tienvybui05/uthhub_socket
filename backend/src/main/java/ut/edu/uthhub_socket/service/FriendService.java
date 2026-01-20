@@ -99,7 +99,10 @@ public class FriendService implements IFriendService{
                         f.getCreatedAt(),
                         f.getStatus(),
                         f.getUser().getAvatar(),
-                        f.getUser().getUsername()
+                        f.getUser().getUsername(),
+                        f.getUser().getGender(),
+                        f.getUser().getDateOfBirth(),
+                        f.getUser().getEmail()
                 ))
                 .toList();
     }
@@ -124,7 +127,10 @@ public class FriendService implements IFriendService{
                             f.getCreatedAt(),
                             f.getStatus(),
                             u.getAvatar(),
-                            u.getUsername()
+                            u.getUsername(),
+                            u.getGender(),
+                            u.getDateOfBirth(),
+                            u.getEmail()
                     );
                 })
                 .toList();
@@ -141,7 +147,10 @@ public class FriendService implements IFriendService{
                         f.getCreatedAt(),
                         f.getStatus(),
                         f.getFriend().getAvatar(),
-                        f.getFriend().getUsername()
+                        f.getFriend().getUsername(),
+                        f.getFriend().getGender(),
+                        f.getFriend().getDateOfBirth(),
+                        f.getFriend().getEmail()
                 ))
                 .toList();
     }

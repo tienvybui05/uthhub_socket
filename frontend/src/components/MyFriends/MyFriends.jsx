@@ -4,10 +4,14 @@ import Avatar from "../Avatar/Avatar";
 import { getMyFriends } from "../../api/friends";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { useChat } from "../../contexts/ChatContext";
+import { CHAT_TABS } from "../../constants/contactsMenu";
+
 function MyFriends() {
     const [friends, setFriends] = useState([]);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState("");
+    const { startNewConversation, setLeftTab } = useChat();
 
     const [keyword, setKeyword] = useState("");
     const [sortMode, setSortMode] = useState("AZ"); // AZ | ZA | NEWEST
@@ -23,6 +27,26 @@ function MyFriends() {
         const list = Array.isArray(data) ? data : data?.data || data?.items || [];
         return list.filter((x) => (x?.status ?? "").toUpperCase() === "ACCEPTED");
     };
+    const handleOpenChat = (user) => {
+        if (!user?.userId) return;
+
+        const chatUser = {
+            id: user.userId,
+            userId: user.userId,
+            username: user.username,
+            fullName: user.fullName,
+            avatar: user.avatar,
+            avatarUrl: user.avatarUrl,
+            email: user.email,
+            gender: user.gender,
+            dateOfBirth: user.dateOfBirth,
+            status: user.status,
+        };
+
+        startNewConversation(chatUser);
+        setLeftTab(CHAT_TABS.MESSAGES);
+    };
+
 
     const fetchFriends = async () => {
         try {
@@ -206,7 +230,12 @@ function MyFriends() {
 
     function FriendRow({ user }) {
         return (
-            <div className={styles.row}>
+            <div
+                className={styles.row}
+                onClick={() => handleOpenChat(user)}
+                role="button"
+                tabIndex={0}
+            >
                 <div className={styles.left}>
                     <div className={styles.avatar}>
                         <Avatar
@@ -223,7 +252,11 @@ function MyFriends() {
                     </div>
                 </div>
 
-                <button className={styles.moreBtn} title="Tùy chọn">
+                <button
+                    className={styles.moreBtn}
+                    title="Tùy chọn"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     …
                 </button>
             </div>

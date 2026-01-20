@@ -15,9 +15,14 @@ import { AuthService } from "../../services/auth.service.jsx";
 import ProfileModal from "../Profile/ProfileModal";
 import UserProfileViewModal from "../Profile/UserProfileViewModal";
 import { searchUserByUsername } from "../../api/users";
+import { useChat } from "../../contexts/ChatContext";
+import { CHAT_TABS } from "../../constants/contactsMenu";
+
 
 function FriendRequests() {
     const me = AuthService.getUser();
+    const { startNewConversation, setLeftTab } = useChat();
+
 
     const [isShowMyProfile, setIsShowMyProfile] = useState(false);
     const [isShowUserProfile, setIsShowUserProfile] = useState(false);
@@ -34,6 +39,34 @@ function FriendRequests() {
         setToast(msg);
         setTimeout(() => setToast(""), 2200);
     };
+
+    const handleChatClick = (req) => {
+        const targetId = req?.userId;
+        if (!targetId) return;
+
+        if (Number(targetId) === Number(me?.id)) return;
+
+        // tạo user object giống AddFriend
+        const user = {
+            id: targetId,
+            userId: targetId,
+            username: req?.username,
+            fullName: req?.fullName,
+            avatar: req?.avatar,
+            avatarUrl: req?.avatarUrl,
+            email: req?.email,
+            gender: req?.gender,
+            dateOfBirth: req?.dateOfBirth,
+            status: req?.status,
+        };
+
+        closeProfile();
+
+        startNewConversation(user);
+        setLeftTab(CHAT_TABS.MESSAGES);
+    };
+
+
 
     const openProfileFromReq = (req) => {
         // req trong friend request của bạn đã có userId, username, fullName, avatar...
@@ -55,6 +88,9 @@ function FriendRequests() {
             fullName: req?.fullName,
             avatar: req?.avatar,
             avatarUrl: req?.avatarUrl,
+            email: req?.email,
+            gender: req?.gender,
+            dateOfBirth: req?.dateOfBirth,
             status: req?.status,
         });
 
@@ -232,17 +268,20 @@ function FriendRequests() {
                                             </div>
                                         </div>
 
-                                        {/* icon nhắn tin (UI only) */}
-                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button">
+
+                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button" onClick={() => handleChatClick(req)}
+                                        >
                                             <FontAwesomeIcon icon={faMessage} />
                                         </button>
                                     </div>
 
-                                    {req?.message && (
-                                        <div className={styles.requestMsg} title={req.message}>
-                                            {req.message}
-                                        </div>
-                                    )}
+                                    <div className={styles.requestMsg}>
+                                        <span className={styles.requestText}>
+                                            {req?.message
+                                                ? req.message
+                                                : `Xin chào, mình là ${req?.fullName || req?.username || "mình"}. Kết bạn với mình nhé!`}
+                                        </span>
+                                    </div>
 
                                     <div className={styles.btnRow}>
                                         <button
@@ -302,8 +341,8 @@ function FriendRequests() {
                                             </div>
                                         </div>
 
-                                        {/* icon nhắn tin (UI only) */}
-                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button">
+                                        <button className={styles.chatIconBtn} title="Nhắn tin" type="button" onClick={() => handleChatClick(req)}
+                                        >
                                             <FontAwesomeIcon icon={faMessage} />
                                         </button>
                                     </div>
