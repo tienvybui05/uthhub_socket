@@ -9,6 +9,7 @@ import { CHAT_BACKGROUND } from "../../constants/contactsMenu";
 import GlobalDefautl from "../../styles/GlobalDefautl/GlobalDefautl";
 import GlobalPink from "../../styles/GlobalPink/GlobalPink";
 import GlobalDark from "../../styles/GlobalDark/GlobalDark";
+import { NotificationsProvider } from "../../contexts/NotificationsContext";
 
 function Messages() {
   const { backgroundColor } = useBackgroundChat();

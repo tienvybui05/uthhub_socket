@@ -37,6 +37,12 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Ràng buộc email @ut.edu.vn
+    if (!form.email.endsWith("@ut.edu.vn")) {
+      setError("Email phải có đuôi @ut.edu.vn");
+      return;
+    }
+
     if (form.password !== form.confirmPassword) {
       setError("Mật khẩu xác nhận không khớp");
       return;
@@ -52,10 +58,8 @@ function Register() {
 
     try {
       setLoading(true);
-
       await register(registerData);
       toast.success("Đăng ký thành công!");
-
       // window.location.href = "/login";
     } catch (err) {
       setError(err.response?.data || "Đăng ký thất bại");
@@ -91,7 +95,7 @@ function Register() {
             <input
               type="text"
               name="username"
-              placeholder="Tên đăng nhập"
+              placeholder="Mã sinh viên"
               value={form.username}
               onChange={handleChange}
               required
@@ -104,10 +108,12 @@ function Register() {
             <input
               type="email"
               name="email"
-              placeholder="Email"
+              placeholder="Email (@ut.edu.vn)"
               value={form.email}
               onChange={handleChange}
               required
+              pattern="^[a-zA-Z0-9._%+-]+@ut\.edu\.vn$"
+              title="Email phải có đuôi @ut.edu.vn"
             />
           </div>
 

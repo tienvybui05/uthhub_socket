@@ -7,18 +7,21 @@ import AppRouter from "./router/AppRouter";
 import { BackgroundChatProvider } from "./contexts/BackgroundChatContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 
 function App() {
   return (
     <>
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={4000}
         newestOnTop
         pauseOnHover
       />
       <BackgroundChatProvider>
-        <AppRouter />
+        <NotificationsProvider>
+          <AppRouter />
+        </NotificationsProvider>
       </BackgroundChatProvider>
     </>
   );
