@@ -8,6 +8,8 @@ import { BackgroundChatProvider } from "./contexts/BackgroundChatContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
+import { WebSocketProvider } from "./contexts/WebSocketProvider";
+import { ChatProvider } from "./contexts/ChatContext";
 
 function App() {
   return (
@@ -19,9 +21,13 @@ function App() {
         pauseOnHover
       />
       <BackgroundChatProvider>
-        <NotificationsProvider>
-          <AppRouter />
-        </NotificationsProvider>
+        <WebSocketProvider>
+          <NotificationsProvider>
+            <ChatProvider>
+              <AppRouter />
+            </ChatProvider>
+          </NotificationsProvider>
+        </WebSocketProvider>
       </BackgroundChatProvider>
     </>
   );

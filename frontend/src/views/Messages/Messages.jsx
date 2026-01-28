@@ -30,9 +30,7 @@ function Messages() {
 
   return (
     <ThemeWrapper>
-      <ChatProvider>
-        <ChatLayout />
-      </ChatProvider>
+      <ChatLayout />
     </ThemeWrapper>
   );
 }
